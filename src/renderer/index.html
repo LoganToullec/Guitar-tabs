@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none';"
+    />
+    <title>GuitarTabs — Grilles d'accords</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true">
+      <span class="blob blob-a"></span>
+      <span class="blob blob-b"></span>
+      <span class="blob blob-c"></span>
+    </div>
+
+    <header class="nav glass">
+      <i class="mark" data-icon="logo" aria-hidden="true"></i>
+      <div class="segmented" id="mode-switch" data-active="chord" role="tablist" aria-label="Mode">
+        <span class="segmented-thumb" aria-hidden="true"></span>
+        <button type="button" class="segment" data-mode="chord" role="tab" aria-selected="true">
+          <i data-icon="chord"></i><span>Accord</span>
+        </button>
+        <button type="button" class="segment" data-mode="tab" role="tab" aria-selected="false">
+          <i data-icon="tab"></i><span>Tablature</span>
+        </button>
+        <button type="button" class="segment" data-mode="song" role="tab" aria-selected="false">
+          <i data-icon="song"></i><span>Chanson</span>
+        </button>
+        <button type="button" class="segment" data-mode="library" role="tab" aria-selected="false">
+          <i data-icon="library"></i><span>Bibliothèque</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="toolbar glass" aria-label="Actions">
+      <button type="button" id="btn-new" class="icon-btn" data-icon="new" data-tip="Nouveau · Ctrl+N" aria-label="Nouveau"></button>
+      <button type="button" id="btn-open" class="icon-btn" data-icon="open" data-tip="Ouvrir · Ctrl+O" aria-label="Ouvrir"></button>
+      <button type="button" id="btn-save" class="icon-btn" data-icon="save" data-tip="Enregistrer · Ctrl+S" aria-label="Enregistrer"></button>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <button type="button" id="btn-undo" class="icon-btn" data-icon="undo" data-tip="Annuler · Ctrl+Z" aria-label="Annuler"></button>
+      <button type="button" id="btn-redo" class="icon-btn" data-icon="redo" data-tip="Rétablir · Ctrl+Y" aria-label="Rétablir"></button>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <button type="button" id="btn-svg" class="icon-btn" data-icon="svg" data-tip="Exporter en SVG" aria-label="Exporter en SVG"></button>
+      <button type="button" id="btn-copy" class="icon-btn" data-icon="copy" data-tip="Copier l'image · Ctrl+Maj+C" aria-label="Copier l'image"></button>
+      <button type="button" id="btn-png" class="icon-btn accent" data-icon="png" data-tip="Exporter en PNG · Ctrl+E" aria-label="Exporter en PNG"></button>
+    </nav>
+
+    <main class="stage">
+      <div class="paper" id="sheet-chord">
+        <div class="canvas">
+          <div id="diagram-chord" class="diagram" role="application" aria-label="Grille d'accord"></div>
+          <input
+            type="text"
+            id="chord-name"
+            class="sheet-title"
+            placeholder="Accord non reconnu"
+            spellcheck="false"
+            aria-label="Nom de l'accord"
+          />
+          <button type="button" id="btn-auto-name" class="reset-name" data-icon="auto" data-tip="Nom automatique" aria-label="Revenir au nom automatique"></button>
+        </div>
+      </div>
+
+      <div class="paper" id="sheet-tab" hidden>
+        <div class="canvas">
+          <div id="diagram-tab" class="diagram" role="application" aria-label="Tablature"></div>
+          <input
+            type="text"
+            id="tab-title"
+            class="sheet-title"
+            placeholder="Tablature sans titre"
+            spellcheck="false"
+            aria-label="Titre de la tablature"
+          />
+        </div>
+      </div>
+
+      <section class="library" id="library-view" hidden>
+        <aside class="library-rail glass">
+          <h3>Dossiers</h3>
+          <div class="folder-list" id="folder-list"></div>
+          <form class="new-folder" id="new-folder-form">
+            <input type="text" id="new-folder-name" placeholder="Nouveau dossier" spellcheck="false" aria-label="Nom du dossier" />
+            <button type="submit" class="icon-btn small" data-icon="folderPlus" data-tip="Créer le dossier" aria-label="Créer le dossier"></button>
+          </form>
+        </aside>
+
+        <div class="library-main glass">
+          <header class="library-head">
+            <input type="search" id="library-search" placeholder="Rechercher un titre ou un artiste…" spellcheck="false" aria-label="Rechercher" />
+            <select id="library-sort" aria-label="Trier">
+              <option value="artist">Par artiste</option>
+              <option value="title">Par titre</option>
+              <option value="recent">Récentes</option>
+            </select>
+          </header>
+          <div class="song-list" id="song-list"></div>
+        </div>
+
+        <aside class="library-detail glass" id="library-detail"></aside>
+        <datalist id="artist-options"></datalist>
+      </section>
+
+      <div class="paper" id="sheet-song" hidden>
+        <div class="canvas">
+          <div id="diagram-song" class="diagram" role="application" aria-label="Partition"></div>
+          <input
+            type="text"
+            id="song-title"
+            class="sheet-title"
+            placeholder="Chanson sans titre"
+            spellcheck="false"
+            aria-label="Titre de la chanson"
+          />
+        </div>
+      </div>
+    </main>
+
+    <aside class="drawer glass" id="chord-drawer" hidden aria-label="Accords de la chanson">
+      <button type="button" id="btn-drawer-toggle" class="drawer-toggle" data-icon="chevronLeft" data-tip="Replier les accords" aria-label="Replier les accords"></button>
+      <div class="drawer-body">
+        <div class="drawer-head">
+          <h3>Accords</h3>
+          <button type="button" id="btn-drawer-add" class="row-btn" data-opens-catalog data-icon="plus" data-tip="Depuis la bibliothèque" aria-label="Ajouter depuis la bibliothèque"></button>
+        </div>
+        <div class="drawer-chords" id="drawer-chords"></div>
+      </div>
+    </aside>
+
+    <aside class="side-panel glass" id="panel-song" hidden aria-label="Structure de la chanson">
+      <button type="button" id="btn-panel-toggle" class="panel-toggle" data-icon="chevronRight" data-tip="Replier le panneau" aria-label="Replier le panneau"></button>
+
+      <div class="panel-body">
+        <label class="field">
+          <span>Artiste</span>
+          <input type="text" id="song-artist" placeholder="Artiste" spellcheck="false" />
+        </label>
+
+        <div class="check" id="song-check" hidden role="status"></div>
+
+        <section>
+          <h3>Sections</h3>
+          <div class="block-list" id="song-blocks"></div>
+        </section>
+
+        <section class="grow">
+          <h3>Section sélectionnée</h3>
+          <div class="block-editor" id="song-editor"></div>
+        </section>
+      </div>
+    </aside>
+
+    <div class="catalog glass" id="chord-catalog" hidden role="dialog" aria-label="Bibliothèque d'accords">
+      <header class="catalog-head">
+        <input type="search" id="catalog-search" placeholder="Chercher un accord…" spellcheck="false" aria-label="Chercher un accord" />
+        <button type="button" id="btn-catalog-close" class="icon-btn small" data-icon="close" data-tip="Fermer" aria-label="Fermer"></button>
+      </header>
+      <div class="catalog-grid" id="catalog-grid"></div>
+      <p class="catalog-foot" id="catalog-foot"></p>
+    </div>
+
+    <div class="chord-picker glass" id="chord-picker" hidden role="dialog" aria-label="Choisir un accord">
+      <div class="picker-list" id="picker-list"></div>
+      <form class="picker-form" id="picker-form">
+        <input type="text" id="picker-input" placeholder="Autre accord…" spellcheck="false" aria-label="Nom de l'accord" />
+        <button type="submit" class="icon-btn small" data-icon="check" data-tip="Placer" aria-label="Placer l'accord"></button>
+      </form>
+      <button type="button" class="picker-remove" id="picker-remove">Retirer l'accord</button>
+    </div>
+
+    <section id="help-chord" class="popover glass" hidden>
+      <ul>
+        <li><i data-icon="click"></i><span>Clic sur la grille : poser ou retirer un point</span></li>
+        <li><i data-icon="barre"></i><span>Clic droit sur un point : barré (3 cordes mini)</span></li>
+        <li><i data-icon="mute"></i><span>Au-dessus d'une corde : à vide ○ puis étouffée ✕</span></li>
+        <li><i data-icon="finger"></i><span>Sous une corde : doigt 1 à 5 (clic droit : recule)</span></li>
+      </ul>
+    </section>
+
+    <section id="help-tab" class="popover popover-high glass" hidden>
+      <ul>
+        <li><i data-icon="click"></i><span>Clic sur une case pour y placer le curseur</span></li>
+        <li><i data-icon="keyboard"></i><span>Tapez la case (0-24), puis Espace pour avancer</span></li>
+        <li><i data-icon="technique"></i><span>Techniques : <b>h p b r / \</b> · ghost <b>g</b> · morte <b>x</b> · harmonique <b>n</b> · vibrato <b>~</b> · tap <b>t</b> · palm mute <b>m</b></span></li>
+        <li><i data-icon="chord"></i><span>Bande du haut : nom d'accord sur n'importe quelle colonne</span></li>
+        <li><i data-icon="colAdd"></i><span>Chaque mesure a sa propre longueur : <b>Inser</b> ajoute une case ici</span></li>
+        <li><i data-icon="clear"></i><span>Retour arrière efface, clic droit vide la case</span></li>
+      </ul>
+    </section>
+
+    <nav class="palette glass" id="palette-tab" hidden aria-label="Techniques">
+      <div class="palette-group">
+        <button type="button" class="glyph-btn" data-link="h" data-tip="Hammer-on · h" data-tip-top>h</button>
+        <button type="button" class="glyph-btn" data-link="p" data-tip="Pull-off · p" data-tip-top>p</button>
+        <button type="button" class="glyph-btn" data-link="b" data-tip="Bend · b" data-tip-top>b</button>
+        <button type="button" class="glyph-btn" data-link="r" data-tip="Relâché · r" data-tip-top>r</button>
+        <button type="button" class="glyph-btn" data-link="/" data-tip="Slide montant · /" data-tip-top>/</button>
+        <button type="button" class="glyph-btn" data-link="\" data-tip="Slide descendant · \" data-tip-top>\</button>
+      </div>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <div class="palette-group">
+        <button type="button" class="glyph-btn" data-flag="ghost" data-tip="Ghost note · g" data-tip-top>( )</button>
+        <button type="button" class="glyph-btn" data-fret="x" data-tip="Note morte · x" data-tip-top>x</button>
+        <button type="button" class="glyph-btn" data-flag="harmonic" data-tip="Harmonique · n" data-tip-top>&lt; &gt;</button>
+        <button type="button" class="glyph-btn" data-flag="vibrato" data-tip="Vibrato · ~" data-tip-top>~</button>
+        <button type="button" class="glyph-btn" data-flag="tap" data-tip="Tapping · t" data-tip-top>t</button>
+        <button type="button" class="glyph-btn wide" data-flag="palmMute" data-tip="Palm mute · m" data-tip-top>P.M.</button>
+      </div>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <div class="palette-group">
+        <button type="button" class="icon-btn small" data-column="insert" data-icon="colAdd" data-tip="Insérer une case · Inser" data-tip-top aria-label="Insérer une case"></button>
+        <button type="button" class="icon-btn small" data-column="remove" data-icon="colRemove" data-tip="Supprimer la case" data-tip-top aria-label="Supprimer la case"></button>
+      </div>
+    </nav>
+
+    <nav class="palette glass" id="alt-names" hidden aria-label="Autres lectures de l'accord"></nav>
+
+    <nav class="dock glass" id="dock-chord" aria-label="Réglages de la grille">
+      <div class="stepper" data-tip="Case de départ" data-tip-top>
+        <i class="stepper-icon" data-icon="position"></i>
+        <button type="button" id="btn-fret-down" class="step" data-icon="minus" aria-label="Case de départ précédente"></button>
+        <output id="out-start-fret">1</output>
+        <button type="button" id="btn-fret-up" class="step" data-icon="plus" aria-label="Case de départ suivante"></button>
+      </div>
+
+      <div class="stepper" data-tip="Nombre de cases" data-tip-top>
+        <i class="stepper-icon" data-icon="rows"></i>
+        <button type="button" id="btn-rows-down" class="step" data-icon="minus" aria-label="Moins de cases"></button>
+        <output id="out-fret-count">5</output>
+        <button type="button" id="btn-rows-up" class="step" data-icon="plus" aria-label="Plus de cases"></button>
+      </div>
+
+      <div class="stepper zoom" data-tip="Zoom" data-tip-top>
+        <i class="stepper-icon" data-icon="zoom"></i>
+        <input type="range" id="zoom-chord" min="100" max="300" step="10" value="150" aria-label="Zoom" />
+      </div>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <button type="button" id="btn-catalog-chord" class="icon-btn" data-opens-catalog data-icon="library" data-tip="Bibliothèque d'accords" data-tip-top aria-label="Bibliothèque d'accords"></button>
+      <button type="button" id="btn-save-chord" class="icon-btn" data-icon="librarySave" data-tip="Enregistrer cet accord" data-tip-top aria-label="Enregistrer cet accord"></button>
+      <button type="button" id="btn-to-song-chord" class="icon-btn" data-icon="addToSong" data-tip="Ajouter à la chanson" data-tip-top aria-label="Ajouter à la chanson"></button>
+      <button type="button" id="btn-clear-chord" class="icon-btn" data-icon="clear" data-tip="Vider la grille" data-tip-top aria-label="Vider la grille"></button>
+      <button type="button" id="btn-help-chord" class="icon-btn" data-icon="help" data-tip="Aide" data-tip-top aria-label="Aide" aria-expanded="false"></button>
+    </nav>
+
+    <nav class="dock glass" id="dock-tab" hidden aria-label="Réglages de la tablature">
+      <div class="stepper" data-tip="Nombre de mesures" data-tip-top>
+        <i class="stepper-icon" data-icon="bars"></i>
+        <button type="button" id="btn-bars-down" class="step" data-icon="minus" aria-label="Moins de mesures"></button>
+        <output id="out-bars">2</output>
+        <button type="button" id="btn-bars-up" class="step" data-icon="plus" aria-label="Plus de mesures"></button>
+      </div>
+
+      <div class="stepper" data-tip="Cases de la mesure courante" data-tip-top>
+        <i class="stepper-icon" data-icon="columns"></i>
+        <button type="button" id="btn-steps-down" class="step" data-icon="minus" aria-label="Moins de cases dans cette mesure"></button>
+        <output id="out-steps">8</output>
+        <button type="button" id="btn-steps-up" class="step" data-icon="plus" aria-label="Plus de cases dans cette mesure"></button>
+      </div>
+
+      <div class="stepper" data-tip="Mesures par ligne" data-tip-top>
+        <i class="stepper-icon" data-icon="wrap"></i>
+        <button type="button" id="btn-wrap-down" class="step" data-icon="minus" aria-label="Moins de mesures par ligne"></button>
+        <output id="out-wrap">4</output>
+        <button type="button" id="btn-wrap-up" class="step" data-icon="plus" aria-label="Plus de mesures par ligne"></button>
+      </div>
+
+      <div class="stepper zoom" data-tip="Zoom" data-tip-top>
+        <i class="stepper-icon" data-icon="zoom"></i>
+        <input type="range" id="zoom-tab" min="80" max="240" step="10" value="130" aria-label="Zoom" />
+      </div>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <button type="button" id="btn-to-song-tab" class="icon-btn" data-icon="addToSong" data-tip="Ajouter à la chanson" data-tip-top aria-label="Ajouter à la chanson"></button>
+      <button type="button" id="btn-clear-tab" class="icon-btn" data-icon="clear" data-tip="Vider la tablature" data-tip-top aria-label="Vider la tablature"></button>
+      <button type="button" id="btn-help-tab" class="icon-btn" data-icon="help" data-tip="Aide" data-tip-top aria-label="Aide" aria-expanded="false"></button>
+    </nav>
+
+    <section id="help-song" class="popover glass" hidden>
+      <ul>
+        <li><i data-icon="addToSong"></i><span>Depuis <b>Accord</b> ou <b>Tablature</b>, « Ajouter à la chanson »</span></li>
+        <li><i data-icon="strum"></i><span>Rythmique : cliquez les flèches sur la partition (↓ ↑ ✕)</span></li>
+        <li><i data-icon="lyrics"></i><span>Paroles : écrivez-les <b>sur la partition</b>. Entrée passe à la ligne, Maj+Tab fait un titre de section</span></li>
+        <li><i data-icon="chord"></i><span>Clic au-dessus d'un mot : choisir l'accord (clic droit sur un accord pour l'ôter)</span></li>
+        <li><i data-icon="download"></i><span>Recherche de paroles sur LRCLIB : tapez ce que vous voulez, choisissez dans la liste</span></li>
+        <li><i data-icon="click"></i><span>Clic droit sur un accord du tiroir pour le retirer</span></li>
+      </ul>
+    </section>
+
+    <nav class="dock glass" id="dock-song" hidden aria-label="Réglages de la chanson">
+      <button type="button" id="btn-add-strum" class="icon-btn" data-icon="strum" data-tip="Ajouter une rythmique" data-tip-top aria-label="Ajouter une rythmique"></button>
+      <button type="button" id="btn-add-lyrics" class="icon-btn" data-icon="lyrics" data-tip="Ajouter des paroles" data-tip-top aria-label="Ajouter des paroles"></button>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <button type="button" id="btn-autoscroll" class="icon-btn" data-icon="play" data-tip="Défilement automatique · Espace" data-tip-top aria-label="Défilement automatique" aria-pressed="false"></button>
+      <div class="stepper zoom narrow" data-tip="Vitesse de défilement" data-tip-top>
+        <i class="stepper-icon" data-icon="speed"></i>
+        <input type="range" id="scroll-speed" min="4" max="120" step="2" value="20" aria-label="Vitesse de défilement" />
+      </div>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <div class="stepper zoom narrow" data-tip="Zoom" data-tip-top>
+        <i class="stepper-icon" data-icon="zoom"></i>
+        <input type="range" id="zoom-song" min="60" max="200" step="10" value="100" aria-label="Zoom" />
+      </div>
+
+      <span class="divider" aria-hidden="true"></span>
+
+      <button type="button" id="btn-to-library" class="icon-btn" data-icon="librarySave" data-tip="Enregistrer dans la bibliothèque" data-tip-top aria-label="Enregistrer dans la bibliothèque"></button>
+      <button type="button" id="btn-clear-song" class="icon-btn" data-icon="clear" data-tip="Vider la chanson" data-tip-top aria-label="Vider la chanson"></button>
+      <button type="button" id="btn-help-song" class="icon-btn" data-icon="help" data-tip="Aide" data-tip-top aria-label="Aide" aria-expanded="false"></button>
+    </nav>
+
+    <section id="help-library" class="popover glass" hidden>
+      <ul>
+        <li><i data-icon="librarySave"></i><span>Depuis <b>Chanson</b>, « Enregistrer dans la bibliothèque »</span></li>
+        <li><i data-icon="lyrics"></i><span>L'artiste saisi est mémorisé et proposé pour les chansons suivantes</span></li>
+        <li><i data-icon="folderPlus"></i><span>Les dossiers se créent à gauche ; les supprimer ne supprime aucune chanson</span></li>
+        <li><i data-icon="open"></i><span>Double-clic sur une chanson pour l'ouvrir ; les enregistrements suivants la mettent à jour</span></li>
+      </ul>
+    </section>
+
+    <nav class="dock glass" id="dock-library" hidden aria-label="Bibliothèque">
+      <button type="button" id="btn-library-save" class="icon-btn" data-icon="librarySave" data-tip="Enregistrer la chanson courante" data-tip-top aria-label="Enregistrer la chanson courante"></button>
+      <span class="divider" aria-hidden="true"></span>
+      <button type="button" id="btn-help-library" class="icon-btn" data-icon="help" data-tip="Aide" data-tip-top aria-label="Aide" aria-expanded="false"></button>
+    </nav>
+
+    <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

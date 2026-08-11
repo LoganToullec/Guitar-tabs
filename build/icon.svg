@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x1="0.1" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#3a3d4a"/>
+      <stop offset="0.45" stop-color="#1d2028"/>
+      <stop offset="1" stop-color="#0c0d12"/>
+    </linearGradient>
+    <radialGradient id="warm" cx="0.22" cy="0.14" r="0.8">
+      <stop offset="0" stop-color="#f2b544" stop-opacity="0.42"/>
+      <stop offset="0.55" stop-color="#f2b544" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#f2b544" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0.6">
+      <stop offset="0" stop-color="#ffd97e"/>
+      <stop offset="1" stop-color="#ee9b2c"/>
+    </linearGradient>
+    <clipPath id="tileClip">
+      <rect width="1024" height="1024" rx="232"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#tileClip)">
+    <rect width="1024" height="1024" fill="url(#tile)"/>
+    <rect width="1024" height="1024" fill="url(#warm)"/>
+    <ellipse cx="512" cy="20" rx="640" ry="340" fill="url(#gloss)"/>
+  </g>
+
+  <g transform="translate(512 542) scale(1.14) translate(-512 -542)">
+    <g stroke="#ffffff" stroke-opacity="0.62" stroke-width="24" stroke-linecap="round">
+      <path d="M300 330V754M441 330V754M583 330V754M724 330V754"/>
+      <path d="M300 330H724M300 471H724M300 613H724M300 754H724"/>
+    </g>
+
+    <rect x="246" y="355" width="532" height="92" rx="46" fill="url(#amber)"/>
+
+    <circle cx="441" cy="542" r="48" fill="#ffffff"/>
+    <circle cx="583" cy="684" r="48" fill="#ffffff"/>
+  </g>
+
+  <rect x="10" y="10" width="1004" height="1004" rx="227" fill="none" stroke="#ffffff" stroke-opacity="0.14" stroke-width="20"/>
+</svg>
