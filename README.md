@@ -314,5 +314,5 @@ tools/make-icons.cjs         Génération des icônes de l'application
 tools/run-electron.cjs       Lanceur Electron à environnement nettoyé
 test/                        Tests unitaires (node:test)
 ```
-#   G u i t a r - t a b s  
+ 
  
