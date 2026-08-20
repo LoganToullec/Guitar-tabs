@@ -7,20 +7,23 @@ import { measureSteps, nextOnString, STRING_LABELS } from './tab-model.js';
 export const TAB_LAYOUT = {
   padX: 18,
   labelWidth: 20,
-  titleTop: 4,
-  titleHeight: 38,
-  titleY: 32,
-  titleSize: 26,
-  systemTop: 56,
+  titleTop: 2,
+  titleHeight: 28,
+  titleY: 22,
+  titleSize: 21,
+  /** Air below the title band: deliberately almost none, the way a paper tab reads. */
+  titleGap: 2,
+  /** Room above the first system when no title is drawn — the top fret labels need it. */
+  topPad: 10,
   /** Band above each system where chord labels are written. */
-  chordLane: 23,
+  chordLane: 20,
   /** Extra band for the P.M. brackets, only when the tab uses palm mutes. */
-  pmLane: 16,
+  pmLane: 15,
   chordSize: 13.5,
   stringGap: 18,
   minColWidth: 17,
-  systemGap: 30,
-  bottomPad: 20,
+  systemGap: 26,
+  bottomPad: 10,
   noteSize: 12.5,
   linkSize: 10.5,
   /** Room for an articulation trailing off the last column. */
@@ -53,24 +56,35 @@ const labelWidth = (note) => noteLabel(note).length * NOTE_CHAR_WIDTH + LABEL_PA
 const systemOfBar = (tab, bar) => Math.floor(bar / tab.barsPerLine);
 const systemCount = (tab) => Math.max(1, Math.ceil(tab.measures.length / tab.barsPerLine));
 const hasPalmMute = (tab) => tab.notes.some((note) => note.palmMute);
-const laneHeight = (tab) => TAB_LAYOUT.chordLane + (hasPalmMute(tab) ? TAB_LAYOUT.pmLane : 0);
 const systemHeight = (tab) => (tab.stringCount - 1) * TAB_LAYOUT.stringGap;
-const blockHeight = (tab) => laneHeight(tab) + systemHeight(tab);
 
-const systemTopY = (tab, system) =>
-  TAB_LAYOUT.systemTop + system * (blockHeight(tab) + TAB_LAYOUT.systemGap);
+/**
+ * A title band is only worth its space when something is written in it. The editor keeps
+ * it whatever happens, because the title field is an input laid over that band; an export
+ * or an embedded tab drops it as soon as the tablature has no title.
+ *
+ * @param {object} tab tablature model
+ * @param {{interactive?: boolean, withTitle?: boolean}} options
+ */
+const showsTitle = (tab, { interactive = false, withTitle = true } = {}) =>
+  withTitle !== false && (interactive || Boolean(tab.title));
 
-const stringsTopY = (tab, system) => systemTopY(tab, system) + laneHeight(tab);
+/** The chord rail is a click target in the editor, so it stays even when it is empty. */
+const showsChordLane = (tab, { interactive = false } = {}) => interactive || tab.chords.length > 0;
+
+const systemTopY = (layout, system) => layout.top + system * (layout.block + TAB_LAYOUT.systemGap);
+
+const stringsTopY = (layout, system) => systemTopY(layout, system) + layout.lane;
 
 /** Top row is the thinnest string, so the index is mirrored. */
-const stringY = (tab, system, string) =>
-  stringsTopY(tab, system) + (tab.stringCount - 1 - string) * TAB_LAYOUT.stringGap;
+const stringY = (tab, layout, system, string) =>
+  stringsTopY(layout, system) + (tab.stringCount - 1 - string) * TAB_LAYOUT.stringGap;
 
 /**
  * Columns are as wide as their widest label, so `<12>` never runs into its neighbour.
  * The whole geometry is resolved once per render and looked up by `bar:step`.
  */
-const buildLayout = (tab) => {
+const buildLayout = (tab, options = {}) => {
   const widest = new Map();
   for (const note of tab.notes) {
     const key = `${note.bar}:${note.step}`;
@@ -99,21 +113,39 @@ const buildLayout = (tab) => {
     systems.push({ bars, boundaries, right: x });
   }
 
-  return { columns, systems, right: Math.max(...systems.map((system) => system.right)) };
+  const withTitle = showsTitle(tab, options);
+  const lane =
+    (showsChordLane(tab, options) ? TAB_LAYOUT.chordLane : 0) +
+    (hasPalmMute(tab) ? TAB_LAYOUT.pmLane : 0);
+
+  return {
+    columns,
+    systems,
+    right: Math.max(...systems.map((system) => system.right)),
+    withTitle,
+    top: withTitle ? TAB_LAYOUT.titleTop + TAB_LAYOUT.titleHeight + TAB_LAYOUT.titleGap : TAB_LAYOUT.topPad,
+    lane,
+    block: lane + systemHeight(tab),
+  };
 };
 
 const columnOf = (layout, bar, step) => layout.columns.get(`${bar}:${step}`) ?? null;
 const columnCenter = (column) => column.x + column.width / 2;
 
-export const tabSize = (tab) => {
-  const layout = buildLayout(tab);
+/**
+ * @param {object} tab tablature model
+ * @param {{interactive?: boolean, withTitle?: boolean}} [options] must match the options the
+ *   tablature is rendered with, since they decide whether a title band is reserved
+ */
+export const tabSize = (tab, options = {}) => {
+  const layout = buildLayout(tab, options);
   const systems = systemCount(tab);
 
   return {
     width: layout.right + TAB_LAYOUT.padX + TAB_LAYOUT.overhang,
     height:
-      TAB_LAYOUT.systemTop +
-      systems * blockHeight(tab) +
+      layout.top +
+      systems * layout.block +
       (systems - 1) * TAB_LAYOUT.systemGap +
       TAB_LAYOUT.bottomPad,
   };
@@ -131,16 +163,16 @@ const renderTitle = (tab, { name, isPlaceholder }, width) => {
 const renderSystemFrame = (tab, layout, index) => {
   const system = layout.systems[index];
   const left = gridLeft();
-  const top = stringsTopY(tab, index);
+  const top = stringsTopY(layout, index);
   const bottom = top + systemHeight(tab);
 
   const strings = Array.from({ length: tab.stringCount }, (_, string) => {
-    const y = stringY(tab, index, string);
+    const y = stringY(tab, layout, index, string);
     return `<line x1="${left}" y1="${y}" x2="${system.right}" y2="${y}" stroke="${RULE}" stroke-width="1.1"/>`;
   }).join('');
 
   const labels = Array.from({ length: tab.stringCount }, (_, string) => {
-    const y = stringY(tab, index, string) + 4;
+    const y = stringY(tab, layout, index, string) + 4;
     return `<text x="${left - 7}" y="${y}" text-anchor="end" font-family="${FONT}" font-size="11.5" fill="${MUTED_INK}">${STRING_LABELS[string]}</text>`;
   }).join('');
 
@@ -156,7 +188,7 @@ const renderNote = (tab, layout, note) => {
   if (!column) return '';
 
   const x = columnCenter(column);
-  const y = stringY(tab, column.system, note.string);
+  const y = stringY(tab, layout, column.system, note.string);
   const label = noteLabel(note);
   const box = labelWidth(note);
 
@@ -176,7 +208,7 @@ const renderLink = (tab, layout, note) => {
   const column = columnOf(layout, note.bar, note.step);
   if (!column) return '';
 
-  const y = stringY(tab, column.system, note.string);
+  const y = stringY(tab, layout, column.system, note.string);
   const from = columnCenter(column) + labelWidth(note) / 2;
 
   const target = nextOnString(tab, note);
@@ -209,7 +241,7 @@ const renderChords = (tab, layout) =>
       const textWidth = chord.text.length * CHORD_CHAR_WIDTH;
       const limit = layout.systems[column.system].right + TAB_LAYOUT.overhang - textWidth;
       const x = Math.min(column.x + 1, limit);
-      const y = systemTopY(tab, column.system) + TAB_LAYOUT.chordLane - 9;
+      const y = systemTopY(layout, column.system) + TAB_LAYOUT.chordLane - 9;
 
       return `<text x="${x}" y="${y}" font-family="${FONT}" font-size="${TAB_LAYOUT.chordSize}" font-weight="700" fill="${INK}">${escapeXml(chord.text)}</text>`;
     })
@@ -240,7 +272,8 @@ const renderPalmMutes = (tab, layout) => {
   const TEXT_WIDTH = 24;
   return runs
     .map((run) => {
-      const y = systemTopY(tab, run.system) + TAB_LAYOUT.chordLane + 11;
+      // The bracket hangs just above the top string, whether or not a chord rail sits over it.
+      const y = stringsTopY(layout, run.system) - 4;
       const dash =
         run.right > run.left + TEXT_WIDTH
           ? `<line x1="${run.left + TEXT_WIDTH}" y1="${y - 3}" x2="${run.right}" y2="${y - 3}" stroke="${INK}" stroke-width="1.1" stroke-dasharray="3 3"/>`
@@ -256,7 +289,7 @@ const renderPalmMutes = (tab, layout) => {
 const slotRect = (column, y, height, attributes) =>
   `<rect x="${column.x}" y="${y}" width="${column.width}" height="${height}" rx="4" ${attributes}/>`;
 
-const chordLaneY = (tab, system) => systemTopY(tab, system) + 1;
+const chordLaneY = (layout, system) => systemTopY(layout, system) + 1;
 
 const renderCursor = (tab, layout, cursor) => {
   const column = cursor ? columnOf(layout, cursor.bar, cursor.step) : null;
@@ -264,8 +297,8 @@ const renderCursor = (tab, layout, cursor) => {
 
   const inChordLane = cursor.lane === 'chords';
   const y = inChordLane
-    ? chordLaneY(tab, column.system)
-    : stringY(tab, column.system, cursor.string) - TAB_LAYOUT.stringGap / 2;
+    ? chordLaneY(layout, column.system)
+    : stringY(tab, layout, column.system, cursor.string) - TAB_LAYOUT.stringGap / 2;
   const height = inChordLane ? TAB_LAYOUT.chordLane - 2 : TAB_LAYOUT.stringGap;
 
   return slotRect(column, y, height, 'fill="none" stroke="#e0921f" stroke-width="1.8"');
@@ -282,7 +315,7 @@ const renderHitAreas = (tab, layout) => {
       cells.push(
         slotRect(
           column,
-          chordLaneY(tab, column.system),
+          chordLaneY(layout, column.system),
           TAB_LAYOUT.chordLane - 2,
           `fill="transparent" class="hit" data-action="chord" data-bar="${bar}" data-step="${step}"`,
         ),
@@ -292,7 +325,7 @@ const renderHitAreas = (tab, layout) => {
         cells.push(
           slotRect(
             column,
-            stringY(tab, column.system, string) - TAB_LAYOUT.stringGap / 2,
+            stringY(tab, layout, column.system, string) - TAB_LAYOUT.stringGap / 2,
             TAB_LAYOUT.stringGap,
             `fill="transparent" class="hit" data-action="cell" data-bar="${bar}" data-step="${step}" data-string="${string}"`,
           ),
@@ -312,10 +345,11 @@ const renderHitAreas = (tab, layout) => {
  * @returns {string} SVG fragment
  */
 export const renderTabBody = (tab, options) => {
-  const layout = buildLayout(tab);
-  const { width } = tabSize(tab);
+  const layout = buildLayout(tab, options);
+  const { width } = tabSize(tab, options);
 
-  let body = options.interactive || options.withTitle === false ? '' : renderTitle(tab, options, width);
+  // On screen the title is an HTML input laid over the band the layout reserves for it.
+  let body = layout.withTitle && !options.interactive ? renderTitle(tab, options, width) : '';
 
   for (let system = 0; system < layout.systems.length; system += 1) {
     body += renderSystemFrame(tab, layout, system);
@@ -336,7 +370,7 @@ export const renderTabBody = (tab, options) => {
 
 /** @returns {string} standalone `<svg>` markup */
 export const renderTabSvg = (tab, options) => {
-  const { width, height } = tabSize(tab);
+  const { width, height } = tabSize(tab, options);
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     `<rect width="${width}" height="${height}" fill="${PAPER}"/>${renderTabBody(tab, options)}</svg>`

@@ -4,19 +4,29 @@ import { MAX_FINGER } from './chord-model.js';
 import { escapeXml } from './xml.js';
 import { fitTitleSize } from './sheet-title.js';
 
+/**
+ * Proportions are those of a printed chord chart: margins as wide as one string gap,
+ * a title sitting right on top of the markers, and a grid running down to the edge.
+ * Everything is expressed in `stringGap` units, so the whole diagram scales from there.
+ */
 export const LAYOUT = {
   stringGap: 28,
-  fretGap: 34,
-  gridLeft: 44,
-  gridTop: 72,
-  sidePad: 44,
-  bottomPad: 20,
-  fingerOffset: 30,
-  titleY: 32,
-  titleTop: 4,
-  titleHeight: 38,
-  titleSize: 26,
-  markerY: 56,
+  fretGap: 33,
+  gridLeft: 28,
+  gridTop: 74,
+  /** Right margin, mirroring `gridLeft` when nothing has to be written beside the grid. */
+  sidePad: 28,
+  /** Wider right margin, used only when a start-fret label has to fit there. */
+  positionPad: 44,
+  bottomPad: 5,
+  /** Band under the grid for the fingering row, drawn only when it carries something. */
+  fingerRow: 28,
+  fingerOffset: 21,
+  titleY: 28,
+  titleTop: 0,
+  titleHeight: 34,
+  titleSize: 30,
+  markerY: 51,
   dotRadius: 9,
   barreHeight: 19,
 };
@@ -24,21 +34,25 @@ export const LAYOUT = {
 const INK = '#14161c';
 const MUTED_INK = '#9aa1ad';
 const FONT = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
+const POSITION_SIZE = 14;
 
 export const stringX = (string) => LAYOUT.gridLeft + string * LAYOUT.stringGap;
 export const rowCenterY = (row) => LAYOUT.gridTop + row * LAYOUT.fretGap + LAYOUT.fretGap / 2;
 
+/** An open position needs no `3fr` label, so it keeps the narrow symmetric margin. */
+const sidePadOf = (chord) => (chord.startFret === 1 ? LAYOUT.sidePad : LAYOUT.positionPad);
+
 /**
  * @param {object} chord chord model
  * @param {{trimEmptyFingers?: boolean}} [options] drop the fingering row when it is unused,
- *   which keeps chord shelves compact on a song sheet (the editor keeps it as a click target)
+ *   which keeps exports and chord shelves compact (the editor keeps it as a click target)
  */
 export const diagramSize = (chord, { trimEmptyFingers = false } = {}) => {
   const usesFingers = chord.fingers.some((finger) => finger > 0);
-  const fingerRow = trimEmptyFingers && !usesFingers ? 0 : LAYOUT.fingerOffset;
+  const fingerRow = trimEmptyFingers && !usesFingers ? 0 : LAYOUT.fingerRow;
 
   return {
-    width: LAYOUT.gridLeft + (chord.stringCount - 1) * LAYOUT.stringGap + LAYOUT.sidePad,
+    width: LAYOUT.gridLeft + (chord.stringCount - 1) * LAYOUT.stringGap + sidePadOf(chord),
     height: LAYOUT.gridTop + chord.fretCount * LAYOUT.fretGap + fingerRow + LAYOUT.bottomPad,
   };
 };
@@ -59,14 +73,14 @@ const renderMarkers = (chord) =>
       const x = stringX(string);
       const y = LAYOUT.markerY;
       if (marker === 'muted') {
-        const arm = 6.5;
+        const arm = 7.5;
         return (
-          `<line x1="${x - arm}" y1="${y - arm}" x2="${x + arm}" y2="${y + arm}" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>` +
-          `<line x1="${x - arm}" y1="${y + arm}" x2="${x + arm}" y2="${y - arm}" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`
+          `<line x1="${x - arm}" y1="${y - arm}" x2="${x + arm}" y2="${y + arm}" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>` +
+          `<line x1="${x - arm}" y1="${y + arm}" x2="${x + arm}" y2="${y - arm}" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>`
         );
       }
       if (marker === 'open') {
-        return `<circle cx="${x}" cy="${y}" r="6" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
+        return `<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="${INK}" stroke-width="2.4"/>`;
       }
       return '';
     })
@@ -91,7 +105,7 @@ const renderGrid = (chord) => {
   }).join('');
 
   const nut = isOpenPosition
-    ? `<rect x="${LAYOUT.gridLeft - 1}" y="${LAYOUT.gridTop - 6}" width="${right - LAYOUT.gridLeft + 2}" height="6.5" fill="${INK}"/>`
+    ? `<rect x="${LAYOUT.gridLeft - 1}" y="${LAYOUT.gridTop - 7}" width="${right - LAYOUT.gridLeft + 2}" height="8" fill="${INK}"/>`
     : '';
 
   return `${nut}${frets}${strings}`;
@@ -99,9 +113,10 @@ const renderGrid = (chord) => {
 
 const renderPositionLabel = (chord) => {
   if (chord.startFret === 1) return '';
-  const x = gridRight(chord) + 12;
-  const y = rowCenterY(0) + 6;
-  return `<text x="${x}" y="${y}" text-anchor="start" font-family="${FONT}" font-size="16" fill="${INK}">${chord.startFret}fr</text>`;
+  // Clear of the dot that may sit on the outermost string, which reaches `dotRadius` past it.
+  const x = gridRight(chord) + LAYOUT.dotRadius + 4;
+  const y = rowCenterY(0) + 5;
+  return `<text x="${x}" y="${y}" text-anchor="start" font-family="${FONT}" font-size="${POSITION_SIZE}" fill="${INK}">${chord.startFret}fr</text>`;
 };
 
 const renderNotes = (chord) => {
@@ -165,18 +180,18 @@ const renderHitAreas = (chord) => {
     .map((_, string) =>
       hitRect(
         stringX(string) - halfString,
-        gridBottom(chord) + LAYOUT.fingerOffset - 18,
+        gridBottom(chord) + LAYOUT.fingerOffset - 15,
         LAYOUT.stringGap,
-        26,
+        24,
         `data-action="finger" data-string="${string}"`,
       ),
     )
     .join('');
 
   const position = hitRect(
-    gridRight(chord) + 4,
+    gridRight(chord) + 3,
     LAYOUT.gridTop,
-    LAYOUT.sidePad - 6,
+    sidePadOf(chord) - 5,
     LAYOUT.fretGap,
     'data-action="position"',
   );
@@ -196,7 +211,7 @@ const renderHitAreas = (chord) => {
  * @returns {string} SVG fragment
  */
 export const renderChordBody = (chord, options) => {
-  const { width } = diagramSize(chord);
+  const { width } = diagramSize(chord, options);
   return (
     (options.interactive ? '' : renderTitle(chord, options, width)) +
     renderMarkers(chord) +

@@ -5,7 +5,7 @@ import { createTabView } from './tab-view.js';
 import { createSongView } from './song-view.js';
 import { createLibraryView } from './library-view.js';
 import { createCatalogView } from './catalog-view.js';
-import { svgToPngDataUrl, toFileName } from './export.js';
+import { svgToPngDataUrl, toFileName, UNITS_PER_INCH, withPhysicalSize } from './export.js';
 import { ICONS, mountIcons } from './icons.js';
 import { createAutoScroll } from './autoscroll.js';
 import { isEditingInside } from './dom.js';
@@ -196,7 +196,9 @@ const sheetFileName = (sheet, extension) =>
 
 const exportPng = async (toClipboard) => {
   const sheet = current().exportable();
-  const dataUrl = await svgToPngDataUrl(sheet.svg, sheet.width, sheet.height);
+  const dataUrl = await svgToPngDataUrl(sheet.svg, sheet.width, sheet.height, {
+    unitsPerInch: UNITS_PER_INCH[mode],
+  });
 
   return toClipboard
     ? window.desktop.copyPng(dataUrl)
@@ -209,7 +211,8 @@ element('btn-copy').addEventListener('click', () => runFileAction('Copie', () =>
 element('btn-svg').addEventListener('click', () =>
   runFileAction('Export SVG', () => {
     const sheet = current().exportable();
-    return window.desktop.exportSvg(sheet.svg, sheetFileName(sheet, 'svg'));
+    const svg = withPhysicalSize(sheet.svg, sheet.width, sheet.height, UNITS_PER_INCH[mode]);
+    return window.desktop.exportSvg(svg, sheetFileName(sheet, 'svg'));
   }),
 );
 

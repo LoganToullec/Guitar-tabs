@@ -134,6 +134,13 @@ début de mesure, et se recale automatiquement s'il déborderait de la ligne.
 Le dock règle le nombre de mesures, la longueur de la mesure courante et le nombre de
 mesures par ligne — au-delà, la tablature repart à la ligne comme sur un tab papier.
 
+### Titre facultatif
+
+Le titre n'est qu'une commodité d'édition : à l'export, une tablature sans titre n'en
+réserve pas la place, et une tablature qui en porte un le colle juste au-dessus de la
+portée. Une tablature reprise dans une chanson laisse toujours son titre de côté, la
+partition ayant déjà le sien.
+
 ## Mode Chanson
 
 La partition est une pile de **sections** que l'on empile, réordonne et supprime depuis
@@ -238,6 +245,12 @@ temporaire renommé, pour qu'une sauvegarde interrompue ne tronque jamais le fic
 
 - **PNG** : rendu 4× (fond blanc), prêt à coller dans un document.
 - **SVG** : vectoriel, redimensionnable sans perte.
+
+Les deux portent leur **taille d'impression**, pas seulement leur nombre de pixels : un
+diagramme d'accord se pose à environ 2 cm de large, une tablature à la largeur d'un tab
+papier. Collé dans Word, l'export arrive donc à la bonne échelle sans être redimensionné
+à la main.
+
 - **Copier** : met l'image PNG dans le presse-papiers.
 - **Enregistrer / Ouvrir** : fichier `.gtab` (JSON) pour retravailler la feuille plus tard.
   Le fichier porte son mode, et l'ouverture bascule automatiquement dessus.
@@ -309,7 +322,8 @@ src/renderer/js/dom.js              Petits utilitaires DOM partagés
 src/renderer/js/sheet-title.js      Titre éditable superposé au SVG
 src/renderer/js/icons.js            Jeu d'icônes SVG inline
 src/renderer/js/history.js          Pile annuler / rétablir
-src/renderer/js/export.js           SVG → PNG, noms de fichiers
+src/renderer/js/export.js           SVG → PNG, taille d'impression, noms de fichiers
+src/renderer/js/png-density.js      Densité (pHYs) inscrite dans le PNG exporté
 tools/make-icons.cjs         Génération des icônes de l'application
 tools/run-electron.cjs       Lanceur Electron à environnement nettoyé
 test/                        Tests unitaires (node:test)

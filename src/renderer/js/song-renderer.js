@@ -4,7 +4,7 @@ import { escapeXml } from './xml.js';
 import { fitTitleSize } from './sheet-title.js';
 import { resolveChordName } from './chord-name.js';
 import { diagramSize, renderChordBody } from './diagram-renderer.js';
-import { renderTabBody, TAB_LAYOUT, tabSize } from './tab-renderer.js';
+import { renderTabBody, tabSize } from './tab-renderer.js';
 import { longestLineLength } from './lyrics.js';
 
 export const SONG_LAYOUT = {
@@ -43,8 +43,8 @@ export const charWidth = () => SONG_LAYOUT.lyricSize * MONO_RATIO;
 export const lineBandHeight = (line) =>
   line.section ? SONG_LAYOUT.sectionHeight : SONG_LAYOUT.chordRowHeight + SONG_LAYOUT.lyricLineHeight;
 
-/** An embedded tablature drops its own title band; 12px of air is enough here. */
-const TAB_TRIM = TAB_LAYOUT.systemTop - 12;
+/** An embedded tablature carries neither its own title nor an empty chord rail. */
+const EMBEDDED_TAB = { interactive: false, withTitle: false };
 
 const beatLabel = (subdivision, index) =>
   subdivision === 16
@@ -57,8 +57,11 @@ const headerHeight = (song) => (song.artist ? 74 : 54);
 
 /* ---------- Measuring ---------- */
 
+/** A shelf diagram is read at a glance, so it drops an unused fingering row like an export. */
+const SHELF_CHORD = { interactive: false, trimEmptyFingers: true };
+
 const chordTile = (chord) => {
-  const size = diagramSize(chord, { trimEmptyFingers: true });
+  const size = diagramSize(chord, SHELF_CHORD);
   return { width: size.width * SONG_LAYOUT.chordScale, height: size.height * SONG_LAYOUT.chordScale };
 };
 
@@ -107,7 +110,7 @@ const blockHeight = (block, width, interactive = false) => {
     case 'strum':
       return SONG_LAYOUT.strumTop + SONG_LAYOUT.strumArrow + 22;
     case 'tab':
-      return tabSize(block.tab).height - TAB_TRIM;
+      return tabSize(block.tab, EMBEDDED_TAB).height;
     case 'lyrics':
       return lyricsHeight(block.lines);
     default:
@@ -122,7 +125,7 @@ const contentWidth = (song) => {
     if (block.type === 'lyrics') {
       widest = Math.max(widest, longestLineLength(block.lines) * charWidth());
     } else if (block.type === 'tab') {
-      widest = Math.max(widest, tabSize(block.tab).width);
+      widest = Math.max(widest, tabSize(block.tab, EMBEDDED_TAB).width);
     } else if (block.type === 'strum') {
       widest = Math.max(widest, block.subdivision * SONG_LAYOUT.strumBeat);
     }
@@ -171,7 +174,7 @@ const renderChordShelf = (block, x, y, width) => {
       const resolved = resolveChordName(entry.chord);
       output +=
         `<g transform="translate(${cursorX} ${cursorY}) scale(${SONG_LAYOUT.chordScale})">` +
-        `${renderChordBody(entry.chord, { ...resolved, interactive: false })}</g>` +
+        `${renderChordBody(entry.chord, { ...resolved, ...SHELF_CHORD })}</g>` +
         `<rect x="${cursorX}" y="${cursorY}" width="${entry.tile.width}" height="${entry.tile.height}" fill="transparent" class="hit" data-action="diagram" data-block="${block.id}" data-index="${entry.index}"/>`;
       cursorX += entry.tile.width + SONG_LAYOUT.chordGap;
     }
@@ -211,7 +214,9 @@ const renderStrum = (block, x, y, interactive) => {
   const beats = block.strokes
     .map((stroke, index) => {
       const beatX = x + index * SONG_LAYOUT.strumBeat + SONG_LAYOUT.strumBeat / 2;
-      const label = `<text x="${beatX}" y="${top + SONG_LAYOUT.strumArrow + 15}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="${MUTED_INK}">${beatLabel(block.subdivision, index)}</text>`;
+      // The off-beats are written "&", which has to be escaped or the whole page stops
+      // being valid XML and the export silently fails.
+      const label = `<text x="${beatX}" y="${top + SONG_LAYOUT.strumArrow + 15}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="${MUTED_INK}">${escapeXml(beatLabel(block.subdivision, index))}</text>`;
       const hit = interactive
         ? `<rect x="${beatX - SONG_LAYOUT.strumBeat / 2}" y="${top - 4}" width="${SONG_LAYOUT.strumBeat}" height="${SONG_LAYOUT.strumArrow + 22}" rx="5" fill="transparent" class="hit" data-action="stroke" data-block="${block.id}" data-index="${index}"/>`
         : '';
@@ -268,7 +273,7 @@ const renderBlock = (block, x, y, width, interactive, selectedId) => {
     case 'tab':
       return (
         picker +
-        `<g transform="translate(${x} ${y - TAB_TRIM})">${renderTabBody(block.tab, { interactive: false, withTitle: false })}</g>` +
+        `<g transform="translate(${x} ${y})">${renderTabBody(block.tab, EMBEDDED_TAB)}</g>` +
         selection
       );
     case 'lyrics':

@@ -118,7 +118,7 @@ export const createTabView = ({ toast, onChange }) => {
       cursor: isActive ? cursor : null,
     });
 
-    const size = tabSize(value);
+    const size = tabSize(value, { interactive: true });
     scaleSheet(ui.diagram, size, zoom);
     positionTitle({
       input: ui.title,
@@ -461,6 +461,8 @@ export const createTabView = ({ toast, onChange }) => {
       endEdit();
       const value = tab();
       const resolved = resolveName(value);
+      // An untitled tablature exports without its title band, so nothing is left hanging
+      // over the staff.
       return {
         svg: renderTabSvg(value, { ...resolved, interactive: false }),
         ...tabSize(value),

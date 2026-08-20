@@ -13,14 +13,23 @@ const MONO = "'Courier New', Courier, monospace";
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-/** Only structural changes need a rebuild; typing must not blow the DOM away. */
-const signatureOf = (positions, blocks) =>
-  positions.map((position) => `${position.id}:${Math.round(position.y)}:${Math.round(position.width)}`).join('|') +
-  '||' +
+/**
+ * Only structural changes need a rebuild; typing must not blow the DOM away, because a
+ * rebuild takes the caret with it. Two things are therefore kept out of the signature and
+ * handled by `place()` instead, since both move with every single keystroke:
+ *
+ * - where a block sits and how wide it is, which follows the longest line;
+ * - the offset of each chord, which slides along as words are inserted before it.
+ *
+ * What is left only changes when the shape of the lyrics really does: lines appearing or
+ * disappearing, a line becoming a section heading, a chord being added, renamed or removed.
+ */
+const signatureOf = (blocks) =>
   blocks
     .map((block) =>
+      `${block.id}:` +
       block.lines
-        .map((line) => `${line.section ? 's' : 'l'}${line.chords.map((chord) => `${chord.index}${chord.name}`).join(',')}`)
+        .map((line) => `${line.section ? 's' : 'l'}${line.chords.map((chord) => chord.name).join(',')}`)
         .join('/'),
     )
     .join('#');
@@ -44,6 +53,8 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
   });
 
   const blockOf = (blockId) => getSong().blocks.find((block) => block.id === blockId) ?? null;
+
+  const currentLine = (blockId, lineIndex) => blockOf(blockId)?.lines[lineIndex] ?? null;
 
   const writeLines = (blockId, lines, { commit = false } = {}) =>
     (commit ? commitLines : liveLines)(blockId, lines);
@@ -122,6 +133,26 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
 
   const focusLine = (blockId, line, caret) => {
     pendingFocus = { blockId, line, caret };
+  };
+
+  /**
+   * A rebuild replaces every input, and the browser silently drops the caret with them.
+   * Noting where it was lets `restoreFocus` put it back, so typing over a line that
+   * carries a chord — which shifts the chord and therefore rebuilds — keeps working.
+   */
+  const captureFocus = () => {
+    const active = document.activeElement;
+    if (!active?.classList?.contains('lyric-text') || !layers.contains(active)) return;
+
+    const row = active.closest('.lyric-row');
+    const layer = active.closest('.lyrics-layer');
+    if (!row || !layer) return;
+
+    pendingFocus = {
+      blockId: layer.dataset.block,
+      line: Number(row.dataset.line),
+      caret: active.selectionStart ?? active.value.length,
+    };
   };
 
   const restoreFocus = () => {
@@ -254,29 +285,39 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
       lane.style.height = `${metrics.chordRow}px`;
       lane.style.fontSize = `${metrics.font}px`;
 
-      for (const chord of line.chords) {
+      line.chords.forEach((chord, at) => {
         const chip = document.createElement('span');
         chip.className = 'chord-chip';
         chip.textContent = chord.name;
         chip.style.left = `${chord.index * metrics.char}px`;
         chip.style.lineHeight = `${metrics.chordRow}px`;
+
+        // Typing before a chord slides it along without rebuilding the row, so its offset
+        // has to be read from the model rather than from the value captured here.
+        const slot = () => {
+          const current = currentLine(blockId, lineIndex)?.chords[at];
+          return current ? { blockId, line: lineIndex, index: current.index, existing: current.name } : null;
+        };
+
         chip.addEventListener('click', (event) => {
           event.stopPropagation();
-          openPicker(chip, { blockId, line: lineIndex, index: chord.index, existing: chord.name });
+          const next = slot();
+          if (next) openPicker(chip, next);
         });
         chip.addEventListener('contextmenu', (event) => {
           event.preventDefault();
           event.stopPropagation();
-          target = { blockId, line: lineIndex, index: chord.index, existing: chord.name };
-          applyChord('');
+          target = slot();
+          if (target) applyChord('');
         });
         lane.append(chip);
-      }
+      });
 
       lane.addEventListener('click', (event) => {
         if (event.target !== lane) return;
+        const words = currentLine(blockId, lineIndex)?.text ?? '';
         const offset = event.clientX - lane.getBoundingClientRect().left;
-        const column = wordStartAt(line.text, Math.round(offset / metrics.char));
+        const column = wordStartAt(words, Math.round(offset / metrics.char));
         openPicker(lane, { blockId, line: lineIndex, index: column, existing: null });
       });
       row.append(lane);
@@ -317,13 +358,44 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
     }
   };
 
+  /**
+   * Brings the rows back in step with the model without rebuilding them: the chords slide
+   * to their new offset as words are typed before them, and the words themselves are
+   * written back when something other than the keyboard changed them — an undo, a redo or
+   * an import. Chips are built in `line.chords` order, which the model keeps sorted.
+   */
+  const refreshLines = (block, layer, metrics) => {
+    block.lines.forEach((line, index) => {
+      const row = layer.querySelector(`.lyric-row[data-line="${index}"]`);
+      if (!row) return;
+
+      const input = row.querySelector('.lyric-text');
+      if (input && input.value !== line.text) {
+        const caret = input === document.activeElement ? clamp(input.selectionStart, 0, line.text.length) : null;
+        input.value = line.text;
+        if (caret !== null) input.setSelectionRange(caret, caret);
+      }
+
+      for (const [at, chip] of [...row.querySelectorAll('.chord-chip')].entries()) {
+        const chord = line.chords[at];
+        if (chord) chip.style.left = `${chord.index * metrics.char}px`;
+      }
+    });
+  };
+
   const place = (positions) => {
+    const song = getSong();
+    const metrics = lineHeights();
+
     for (const position of positions.filter((entry) => entry.type === 'lyrics')) {
       const layer = layers.querySelector(`[data-block="${position.id}"]`);
-      if (!layer) continue;
+      const block = song.blocks.find((entry) => entry.id === position.id);
+      if (!layer || !block) continue;
+
       layer.style.left = `${position.x * zoom}px`;
       layer.style.top = `${position.y * zoom}px`;
       layer.style.width = `${position.width * zoom}px`;
+      refreshLines(block, layer, metrics);
     }
   };
 
@@ -331,9 +403,11 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
     sync: (positions, nextZoom) => {
       const song = getSong();
       const blocks = song.blocks.filter((block) => block.type === 'lyrics');
-      const next = `${nextZoom}::${signatureOf(positions, blocks)}`;
+      const next = `${nextZoom}::${signatureOf(blocks)}`;
 
       if (next !== signature) {
+        // An explicit request (a split, a merge) knows better than where the caret is now.
+        if (!pendingFocus) captureFocus();
         zoom = nextZoom;
         signature = next;
         rebuild(positions);

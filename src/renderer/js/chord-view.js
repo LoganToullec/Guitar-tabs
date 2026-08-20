@@ -217,9 +217,12 @@ export const createChordView = ({ toast, onChange }) => {
     exportable: () => {
       const value = chord();
       const resolved = resolveName(value);
+      // The editor keeps the fingering row as a click target; an export drops it when it
+      // is empty, which is what makes the image as compact as a printed chord chart.
+      const options = { ...resolved, interactive: false, trimEmptyFingers: true };
       return {
-        svg: renderChordSvg(value, { ...resolved, interactive: false }),
-        ...diagramSize(value),
+        svg: renderChordSvg(value, options),
+        ...diagramSize(value, options),
         name: resolved.isPlaceholder ? '' : resolved.name,
       };
     },
