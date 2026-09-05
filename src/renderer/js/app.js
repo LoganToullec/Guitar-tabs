@@ -5,7 +5,17 @@ import { createTabView } from './tab-view.js';
 import { createSongView } from './song-view.js';
 import { createLibraryView } from './library-view.js';
 import { createCatalogView } from './catalog-view.js';
-import { CLIPBOARD_DPI, svgToPngDataUrl, toFileName, UNITS_PER_INCH, withPhysicalSize } from './export.js';
+import {
+  CHORD_WIDTH_MM,
+  chordUnitsPerInch,
+  chordWidthMm,
+  CLIPBOARD_DPI,
+  setChordWidthMm,
+  svgToPngDataUrl,
+  toFileName,
+  unitsPerInch,
+  withPhysicalSize,
+} from './export.js';
 import { ICONS, mountIcons } from './icons.js';
 import { createAutoScroll } from './autoscroll.js';
 import { isEditingInside } from './dom.js';
@@ -100,12 +110,69 @@ const createPopover = (button, panel) => {
   return api;
 };
 
+createPopover(element('btn-size-chord'), element('size-chord'));
 createPopover(element('btn-help-chord'), element('help-chord'));
 createPopover(element('btn-help-tab'), element('help-tab'));
 createPopover(element('btn-help-song'), element('help-song'));
 createPopover(element('btn-help-library'), element('help-library'));
 
 const closeAllPopovers = () => popovers.forEach((popover) => popover.close());
+
+/* ---------- Export size ---------- */
+
+/**
+ * The width a chord lands at in a document, in millimetres, with the diagram drawn
+ * life-size beside the slider — a CSS pixel being exactly 1/96 inch, the preview and the
+ * pasted image are the same number of pixels, so what is on screen is what Word gets.
+ */
+const sizer = {
+  panel: element('size-chord'),
+  button: element('btn-size-chord'),
+  range: element('size-range'),
+  value: element('size-value'),
+  paper: element('size-paper'),
+  ruler: element('size-ruler'),
+  note: element('size-note'),
+};
+
+const MM_PER_CM = 10;
+const PX_PER_CM = CLIPBOARD_DPI / 2.54;
+const centimetres = (millimetres) => (millimetres / MM_PER_CM).toFixed(1).replace('.', ',');
+
+const drawSizePreview = () => {
+  const millimetres = Number(sizer.range.value);
+  const sheet = views.chord.exportable();
+  const density = chordUnitsPerInch(millimetres);
+  const pixels = (units) => Math.round((units / density) * CLIPBOARD_DPI);
+
+  const width = pixels(sheet.width);
+  const height = pixels(sheet.height);
+
+  sizer.value.textContent = `${centimetres(millimetres)} cm`;
+  sizer.paper.innerHTML = sheet.svg;
+  const preview = sizer.paper.querySelector('svg');
+  if (preview) {
+    preview.setAttribute('width', String(width));
+    preview.setAttribute('height', String(height));
+  }
+
+  sizer.ruler.style.width = `${width}px`;
+  sizer.ruler.style.setProperty('--cm', `${PX_PER_CM}px`);
+  sizer.note.textContent =
+    `${centimetres(millimetres)} × ${centimetres((sheet.height / sheet.width) * millimetres)} cm ` +
+    `sur la page · ${width} × ${height} px collés`;
+};
+
+sizer.range.min = String(CHORD_WIDTH_MM.min);
+sizer.range.max = String(CHORD_WIDTH_MM.max);
+sizer.range.step = String(CHORD_WIDTH_MM.step);
+sizer.range.value = String(chordWidthMm());
+
+sizer.button.addEventListener('click', drawSizePreview);
+sizer.range.addEventListener('input', () => {
+  setChordWidthMm(sizer.range.value);
+  drawSizePreview();
+});
 
 document.addEventListener('click', (event) => {
   if (popovers.some((popover) => popover.contains(event.target))) return;
@@ -196,12 +263,12 @@ const sheetFileName = (sheet, extension) =>
 
 const exportPng = async (toClipboard) => {
   const sheet = current().exportable();
-  const unitsPerInch = UNITS_PER_INCH[mode];
+  const density = unitsPerInch(mode);
   const dataUrl = await svgToPngDataUrl(sheet.svg, sheet.width, sheet.height, {
-    unitsPerInch,
+    unitsPerInch: density,
     // A copy is sized in pixels rather than in dpi, because that is all the clipboard
     // carries — see CLIPBOARD_DPI.
-    ...(toClipboard ? { scale: CLIPBOARD_DPI / unitsPerInch } : {}),
+    ...(toClipboard ? { scale: CLIPBOARD_DPI / density } : {}),
   });
 
   return toClipboard
@@ -215,7 +282,7 @@ element('btn-copy').addEventListener('click', () => runFileAction('Copie', () =>
 element('btn-svg').addEventListener('click', () =>
   runFileAction('Export SVG', () => {
     const sheet = current().exportable();
-    const svg = withPhysicalSize(sheet.svg, sheet.width, sheet.height, UNITS_PER_INCH[mode]);
+    const svg = withPhysicalSize(sheet.svg, sheet.width, sheet.height, unitsPerInch(mode));
     return window.desktop.exportSvg(svg, sheetFileName(sheet, 'svg'));
   }),
 );

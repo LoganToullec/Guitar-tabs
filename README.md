@@ -256,15 +256,26 @@ temporaire renommé, pour qu'une sauvegarde interrompue ne tronque jamais le fic
 - **SVG** : vectoriel, redimensionnable sans perte.
 
 Les deux portent leur **taille d'impression**, pas seulement leur nombre de pixels : un
-diagramme d'accord se pose à environ 2 cm de large, une tablature à la largeur d'un tab
-papier. Collé dans Word, l'export arrive donc à la bonne échelle sans être redimensionné
-à la main.
+diagramme d'accord se pose à la largeur choisie dans le dock, une tablature à la largeur
+d'un tab papier. Collé dans Word, l'export arrive donc à la bonne échelle sans être
+redimensionné à la main.
 
-- **Copier** : met l'image PNG dans le presse-papiers, **à la taille imprimée** — un
-  diagramme d'accord arrive dans Word à 2,06 cm de large, pas à 20 cm. Le presse-papiers
-  de Windows ne transporte aucune résolution : le nombre de pixels y est la seule mesure
-  de la taille, une copie fait donc 78 px de large là où le fichier PNG en fait 784. Pour
-  une image de qualité impression, préférez l'**export PNG**, qui porte sa densité.
+- **Copier** : met l'image PNG dans le presse-papiers, **à la taille imprimée** — pas à
+  20 cm de large.
+
+### Taille d'export d'un accord
+
+Le bouton **règle** du dock Accord ouvre un curseur qui règle la largeur du diagramme
+exporté, de **1,5 à 6 cm** (2,1 cm par défaut, la largeur d'une grille imprimée). Le
+panneau montre l'accord **à sa taille réelle** sur une feuille blanche, avec une règle
+graduée au centimètre en dessous : ce qui est à l'écran est ce que Word recevra. Le
+réglage est mémorisé d'une session à l'autre.
+
+Il vaut pour les trois sorties — copie, PNG et SVG. Une remarque sur la copie : le
+presse-papiers de Windows ne transporte aucune résolution, le nombre de pixels y est donc
+la seule mesure de la taille. Un accord copié à 2,1 cm ne fait que 79 px de large et
+paraîtra mou à l'impression ; **élargir le curseur donne d'autant plus de pixels**, et
+l'export PNG, lui, garde sa pleine résolution à n'importe quelle largeur.
 - **Enregistrer / Ouvrir** : fichier `.gtab` (JSON) pour retravailler la feuille plus tard.
   Le fichier porte son mode, et l'ouverture bascule automatiquement dessus.
 
@@ -335,7 +346,7 @@ src/renderer/js/dom.js              Petits utilitaires DOM partagés
 src/renderer/js/sheet-title.js      Titre éditable superposé au SVG
 src/renderer/js/icons.js            Jeu d'icônes SVG inline
 src/renderer/js/history.js          Pile annuler / rétablir
-src/renderer/js/export.js           SVG → PNG, taille d'impression, noms de fichiers
+src/renderer/js/export.js           SVG → PNG, taille d'impression et d'export, noms de fichiers
 src/renderer/js/png-density.js      Densité (pHYs) inscrite dans le PNG exporté
 tools/make-icons.cjs         Génération des icônes de l'application
 tools/run-electron.cjs       Lanceur Electron à environnement nettoyé

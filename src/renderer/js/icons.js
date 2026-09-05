@@ -38,6 +38,10 @@ export const ICONS = {
   position: glyph('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.8"/>'),
   rows: glyph('<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="M3 15h18"/>'),
   zoom: glyph('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.7-3.7"/>'),
+  ruler: glyph(
+    '<rect x="2" y="7" width="20" height="10" rx="2"/>' +
+      '<path d="M7 7v3M12 7v4M17 7v3"/>',
+  ),
 
   minus: glyph('<path d="M5 12h14"/>'),
   plus: glyph('<path d="M12 5v14"/><path d="M5 12h14"/>'),

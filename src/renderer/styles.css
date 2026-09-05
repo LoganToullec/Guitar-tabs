@@ -1799,6 +1799,95 @@ body[data-panel='closed'] .panel-toggle {
   font-weight: 700;
 }
 
+/* ---------- Export size ---------- */
+
+/*
+ * The preview is drawn at 96 px per inch, which is the definition of a CSS pixel: the
+ * white sheet therefore shows the diagram at the size it will really be on the page.
+ */
+.sizer {
+  width: 340px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sizer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sizer-head b {
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.sizer-head output {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.sizer-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+/*
+ * The sheet hugs the diagram; the panel is anchored by its bottom edge, so it grows
+ * upwards and the slider stays put under the cursor while it is being dragged.
+ */
+.sizer-paper {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 112px;
+  padding: 10px;
+  border-radius: var(--r-sm);
+  background: #fdfdfc;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+}
+
+.sizer-paper svg {
+  display: block;
+}
+
+/* One tick per centimetre, so the width can be read off the preview. */
+.sizer-ruler {
+  height: 8px;
+  min-width: 1px;
+  border-bottom: 1px solid var(--border-lit);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--text-faint) 0 1px,
+    transparent 1px var(--cm, 37.8px)
+  );
+}
+
+.sizer input[type='range'] {
+  width: 100%;
+}
+
+.sizer-note {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.sizer-note.dim {
+  margin-top: -6px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
 /* ---------- Toast ---------- */
 
 .toast {

@@ -184,6 +184,21 @@
       </ul>
     </section>
 
+    <section id="size-chord" class="popover glass sizer" hidden aria-label="Taille d'export de l'accord">
+      <header class="sizer-head">
+        <b>Taille d'export</b>
+        <output id="size-value">2,1 cm</output>
+      </header>
+      <div class="sizer-stage">
+        <!-- Drawn at 96 px per inch, which is what a CSS pixel is: the preview is life-size. -->
+        <div class="sizer-paper" id="size-paper"></div>
+        <div class="sizer-ruler" id="size-ruler" aria-hidden="true"></div>
+      </div>
+      <input type="range" id="size-range" aria-label="Largeur de l'accord exporté, en millimètres" />
+      <p class="sizer-note" id="size-note"></p>
+      <p class="sizer-note dim">L'export PNG fait la même taille, en pleine résolution.</p>
+    </section>
+
     <section id="help-tab" class="popover popover-high glass" hidden>
       <ul>
         <li><i data-icon="click"></i><span>Clic sur une case pour y placer le curseur</span></li>
@@ -248,6 +263,7 @@
 
       <span class="divider" aria-hidden="true"></span>
 
+      <button type="button" id="btn-size-chord" class="icon-btn" data-icon="ruler" data-tip="Taille d'export" data-tip-top aria-label="Taille d'export" aria-expanded="false"></button>
       <button type="button" id="btn-catalog-chord" class="icon-btn" data-opens-catalog data-icon="library" data-tip="Bibliothèque d'accords" data-tip-top aria-label="Bibliothèque d'accords"></button>
       <button type="button" id="btn-save-chord" class="icon-btn" data-icon="librarySave" data-tip="Enregistrer cet accord" data-tip-top aria-label="Enregistrer cet accord"></button>
       <button type="button" id="btn-to-song-chord" class="icon-btn" data-icon="addToSong" data-tip="Ajouter à la chanson" data-tip-top aria-label="Ajouter à la chanson"></button>
