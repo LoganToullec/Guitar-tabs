@@ -207,7 +207,7 @@ export const createSongView = ({ toast, onChange }) => {
 
     if (block.type === 'lyrics') {
       ui.editor.innerHTML =
-        '<p class="empty">Les paroles s\'écrivent directement sur la partition. Entrée passe à la ligne, Maj+Tab bascule une ligne en titre de section, et un clic au-dessus d\'un mot y pose un accord.</p>' +
+        '<p class="empty">Les paroles s\'écrivent directement sur la partition. Entrée passe à la ligne, Maj+Tab bascule une ligne en titre de section, et un clic au-dessus d\'un mot y pose un accord. Un texte collé à plusieurs lignes se pose ligne par ligne, lignes vides comprises.</p>' +
         '<form class="import-row" id="lyrics-search-form">' +
         '<input type="search" id="lyrics-query" placeholder="Artiste, titre…" spellcheck="false" aria-label="Rechercher des paroles" />' +
         `<button type="submit" class="icon-btn" data-tip="Chercher les paroles (LRCLIB)" aria-label="Chercher les paroles">${iconMarkup('download')}</button>` +

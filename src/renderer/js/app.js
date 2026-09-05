@@ -5,7 +5,7 @@ import { createTabView } from './tab-view.js';
 import { createSongView } from './song-view.js';
 import { createLibraryView } from './library-view.js';
 import { createCatalogView } from './catalog-view.js';
-import { svgToPngDataUrl, toFileName, UNITS_PER_INCH, withPhysicalSize } from './export.js';
+import { CLIPBOARD_DPI, svgToPngDataUrl, toFileName, UNITS_PER_INCH, withPhysicalSize } from './export.js';
 import { ICONS, mountIcons } from './icons.js';
 import { createAutoScroll } from './autoscroll.js';
 import { isEditingInside } from './dom.js';
@@ -196,8 +196,12 @@ const sheetFileName = (sheet, extension) =>
 
 const exportPng = async (toClipboard) => {
   const sheet = current().exportable();
+  const unitsPerInch = UNITS_PER_INCH[mode];
   const dataUrl = await svgToPngDataUrl(sheet.svg, sheet.width, sheet.height, {
-    unitsPerInch: UNITS_PER_INCH[mode],
+    unitsPerInch,
+    // A copy is sized in pixels rather than in dpi, because that is all the clipboard
+    // carries — see CLIPBOARD_DPI.
+    ...(toClipboard ? { scale: CLIPBOARD_DPI / unitsPerInch } : {}),
   });
 
   return toClipboard

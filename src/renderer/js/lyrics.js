@@ -90,3 +90,58 @@ export const wordStartAt = (text, index) => {
   while (start > 0 && text[start - 1] !== ' ') start -= 1;
   return start;
 };
+
+const shiftBy = (chords, delta) =>
+  chords.map((chord) => ({ ...chord, index: Math.max(0, chord.index + delta) }));
+
+/**
+ * Splices a multi-line paste into a single line, so a whole song copied out of a document
+ * lands as it was written: the words left of the caret keep the first pasted line, the
+ * words right of it join the last, and everything between becomes its own line — blank
+ * lines included, which is what makes a stanza break survive the paste.
+ *
+ * A pasted section heading never swallows the words around it: it stays on its own line
+ * and they keep theirs.
+ *
+ * @param {LyricLine} line the line the caret is in
+ * @param {number} selectionStart caret, or start of the replaced selection
+ * @param {number} selectionEnd end of the replaced selection
+ * @param {string} text the pasted text
+ * @returns {{lines: LyricLine[], caret: {line: number, index: number}}} lines to put in
+ *   place of `line`, and where the caret belongs, counted from the first of them
+ */
+export const spliceLines = (line, selectionStart, selectionEnd, text) => {
+  const head = line.text.slice(0, selectionStart);
+  const tail = line.text.slice(selectionEnd);
+  const kept = line.chords.filter((chord) => chord.index <= selectionStart);
+  const moved = line.chords.filter((chord) => chord.index >= selectionEnd);
+
+  const lines = parseLyrics(text);
+
+  if (head !== '') {
+    if (lines[0].section) lines.unshift({ text: head, section: false, chords: kept });
+    else {
+      lines[0] = {
+        ...lines[0],
+        text: head + lines[0].text,
+        chords: [...kept, ...shiftBy(lines[0].chords, head.length)],
+      };
+    }
+  }
+
+  const last = lines.length - 1;
+  const caret = { line: last, index: lines[last].text.length };
+
+  if (tail !== '') {
+    if (lines[last].section) lines.push({ text: tail, section: false, chords: shiftBy(moved, -selectionEnd) });
+    else {
+      lines[last] = {
+        ...lines[last],
+        text: lines[last].text + tail,
+        chords: [...lines[last].chords, ...shiftBy(moved, lines[last].text.length - selectionEnd)],
+      };
+    }
+  }
+
+  return { lines: lines.map(normalizeLine), caret };
+};

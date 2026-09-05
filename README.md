@@ -21,6 +21,10 @@ Chaque bouton a une infobulle. `Ctrl+1` à `Ctrl+4` basculent d'un mode à l'aut
 
 ## Mode Accord
 
+Le diagramme est dessiné aux proportions d'une grille d'accord imprimée — sillet épais,
+grille grasse, gros points, titre large — relevées au pixel sur les grilles d'une feuille
+de référence, pour qu'un accord collé dans un document se confonde avec elles.
+
 | Geste | Effet |
 |---|---|
 | **Clic** sur une case de la grille | Poser / retirer un point |
@@ -178,12 +182,17 @@ elles s'impriment :
 
 | Geste | Effet |
 |---|---|
-| **Entrée** | Passer à la ligne (coupe la ligne au curseur) |
+| **Entrée** | Passer à la ligne (coupe la ligne au curseur) — sur une ligne vide, elle saute une ligne |
 | **Retour arrière** en début de ligne | Recoller à la ligne précédente |
 | **Flèches haut / bas** | Passer d'une ligne à l'autre |
 | **Maj+Tab** | Basculer la ligne en titre de section (*Couplet*, *Refrain*…) |
+| **Ctrl+V** d'un texte à plusieurs lignes | Poser tout le bloc d'un coup, lignes vides comprises |
 | **Clic dans la bande au-dessus d'une ligne** | Poser un accord sur le mot visé |
 | **Clic sur un accord** | Le changer · **clic droit** : l'enlever |
+
+Coller les paroles d'un document Word les repose **telles qu'elles étaient écrites** : une
+ligne par ligne, les sauts de ligne entre les couplets conservés, et les `[Refrain]` pris
+pour des titres de section. Un titre collé n'avale jamais les mots qui l'entourent.
 
 Aucun crochet à taper : le clic ouvre un sélecteur qui propose **les accords déjà présents
 dans la chanson** (ceux du tiroir, plus ceux déjà placés), avec un champ libre pour tout
@@ -251,7 +260,11 @@ diagramme d'accord se pose à environ 2 cm de large, une tablature à la largeur
 papier. Collé dans Word, l'export arrive donc à la bonne échelle sans être redimensionné
 à la main.
 
-- **Copier** : met l'image PNG dans le presse-papiers.
+- **Copier** : met l'image PNG dans le presse-papiers, **à la taille imprimée** — un
+  diagramme d'accord arrive dans Word à 2,06 cm de large, pas à 20 cm. Le presse-papiers
+  de Windows ne transporte aucune résolution : le nombre de pixels y est la seule mesure
+  de la taille, une copie fait donc 78 px de large là où le fichier PNG en fait 784. Pour
+  une image de qualité impression, préférez l'**export PNG**, qui porte sa densité.
 - **Enregistrer / Ouvrir** : fichier `.gtab` (JSON) pour retravailler la feuille plus tard.
   Le fichier porte son mode, et l'ouverture bascule automatiquement dessus.
 

@@ -11,6 +11,16 @@ const PNG_SCALE = 4;
  */
 export const UNITS_PER_INCH = { chord: 240, tab: 96, song: 96 };
 
+/**
+ * What a pasted bitmap is worth on a page. Windows hands the clipboard a raw DIB, which
+ * carries no resolution at all, so Word reads it at 96 dpi and a 4x chord diagram lands
+ * eight inches wide. The pixel count is therefore the only lever on the pasted size: a
+ * copy is rasterised at exactly `unitsPerInch / 96` of the drawing, so Word puts it down
+ * at the size of a printed chord chart. The PNG and SVG exports keep the full resolution,
+ * since a file can state its own density.
+ */
+export const CLIPBOARD_DPI = 96;
+
 const svgObjectUrl = (svg) =>
   URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
 

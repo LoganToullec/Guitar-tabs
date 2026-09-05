@@ -7,7 +7,7 @@
  */
 
 import { charWidth, lineBandHeight, SONG_LAYOUT } from './song-renderer.js';
-import { emptyLine, sectionLine, wordStartAt } from './lyrics.js';
+import { emptyLine, sectionLine, spliceLines, wordStartAt } from './lyrics.js';
 
 const MONO = "'Courier New', Courier, monospace";
 
@@ -227,6 +227,37 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
     ]);
   };
 
+  /**
+   * A paste carrying line breaks is laid out as lines rather than flattened into one, so
+   * the lyrics of a whole song can be dropped on the sheet in a single gesture.
+   */
+  const handlePaste = (event, blockId, lineIndex, input) => {
+    const text = event.clipboardData?.getData('text/plain') ?? '';
+    // One line is exactly what a text input already does well; leave it to the browser.
+    if (!/\r|\n/.test(text)) return;
+    event.preventDefault();
+
+    // Close the running edit first: it renders, and a render before the new lines exist
+    // would drop the focus we are about to ask for.
+    endEdit();
+    const block = blockOf(blockId);
+    if (!block) return;
+
+    const { lines, caret } = spliceLines(
+      block.lines[lineIndex],
+      input.selectionStart,
+      input.selectionEnd,
+      text,
+    );
+
+    focusLine(blockId, lineIndex + caret.line, caret.index);
+    commitLines(blockId, [
+      ...block.lines.slice(0, lineIndex),
+      ...lines,
+      ...block.lines.slice(lineIndex + 1),
+    ]);
+  };
+
   const toggleSection = (blockId, lineIndex) => {
     const block = blockOf(blockId);
     const line = block.lines[lineIndex];
@@ -334,6 +365,7 @@ export const createLyricsEditor = ({ host, picker, getSong, liveLines, commitLin
     if (!line.section) input.style.fontFamily = MONO;
 
     input.addEventListener('input', () => handleInput(blockId, lineIndex, input));
+    input.addEventListener('paste', (event) => handlePaste(event, blockId, lineIndex, input));
     input.addEventListener('keydown', (event) => handleKey(event, blockId, lineIndex, input));
     input.addEventListener('blur', () => endEdit());
     row.append(input);

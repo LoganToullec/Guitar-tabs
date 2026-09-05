@@ -5,9 +5,12 @@ import { escapeXml } from './xml.js';
 import { fitTitleSize } from './sheet-title.js';
 
 /**
- * Proportions are those of a printed chord chart: margins as wide as one string gap,
- * a title sitting right on top of the markers, and a grid running down to the edge.
- * Everything is expressed in `stringGap` units, so the whole diagram scales from there.
+ * Proportions measured on the printed chord charts of the reference sheet (Le reve du
+ * pecheur.docx): thick grid, heavy nut, fat dots, a title as wide as the grid itself.
+ * Everything is a multiple of `stringGap`, so the whole diagram scales from that number:
+ *
+ *   fret gap 1.17 - margins 1.00 - nut 0.39 - dot radius 0.42 - open circle 0.40
+ *   grid lines 0.14 - title baseline 1.04 - title size 1.42 - markers 1.76 - first fret 2.63
  */
 export const LAYOUT = {
   stringGap: 28,
@@ -17,24 +20,35 @@ export const LAYOUT = {
   /** Right margin, mirroring `gridLeft` when nothing has to be written beside the grid. */
   sidePad: 28,
   /** Wider right margin, used only when a start-fret label has to fit there. */
-  positionPad: 44,
-  bottomPad: 5,
+  positionPad: 50,
+  /** Just enough that the last fret line is not sliced in half by the edge of the box. */
+  bottomPad: 1,
   /** Band under the grid for the fingering row, drawn only when it carries something. */
   fingerRow: 28,
   fingerOffset: 21,
-  titleY: 28,
-  titleTop: 0,
-  titleHeight: 34,
-  titleSize: 30,
-  markerY: 51,
-  dotRadius: 9,
-  barreHeight: 19,
+  titleY: 29.2,
+  titleTop: -6,
+  titleHeight: 42,
+  titleSize: 39.8,
+  markerY: 49.3,
+  dotRadius: 11.7,
+  barreHeight: 23.4,
+  /** The nut is the top fret line thickened upwards; its foot stays on that line. */
+  nutHeight: 11,
 };
 
-const INK = '#14161c';
+const INK = '#000000';
+/** The reference charts print their title a shade softer than the grid. */
+const TITLE_INK = '#272727';
 const MUTED_INK = '#9aa1ad';
 const FONT = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
-const POSITION_SIZE = 14;
+const POSITION_SIZE = 16;
+const STRING_STROKE = 3.9;
+const FRET_STROKE = 4.4;
+const OPEN_RADIUS = 11.2;
+const OPEN_STROKE = 2.3;
+const MUTED_ARM = 9.8;
+const MUTED_STROKE = 2.7;
 
 export const stringX = (string) => LAYOUT.gridLeft + string * LAYOUT.stringGap;
 export const rowCenterY = (row) => LAYOUT.gridTop + row * LAYOUT.fretGap + LAYOUT.fretGap / 2;
@@ -62,7 +76,7 @@ const gridBottom = (chord) => LAYOUT.gridTop + chord.fretCount * LAYOUT.fretGap;
 
 const renderTitle = (chord, { name, isPlaceholder }, width) => {
   const size = fitTitleSize(name, width, LAYOUT, isPlaceholder);
-  const fill = isPlaceholder ? MUTED_INK : INK;
+  const fill = isPlaceholder ? MUTED_INK : TITLE_INK;
   const style = isPlaceholder ? ' font-style="italic"' : ' font-weight="700"';
   return `<text x="${width / 2}" y="${LAYOUT.titleY}" text-anchor="middle" font-family="${FONT}" font-size="${size}"${style} fill="${fill}">${escapeXml(name)}</text>`;
 };
@@ -73,14 +87,13 @@ const renderMarkers = (chord) =>
       const x = stringX(string);
       const y = LAYOUT.markerY;
       if (marker === 'muted') {
-        const arm = 7.5;
         return (
-          `<line x1="${x - arm}" y1="${y - arm}" x2="${x + arm}" y2="${y + arm}" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>` +
-          `<line x1="${x - arm}" y1="${y + arm}" x2="${x + arm}" y2="${y - arm}" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>`
+          `<line x1="${x - MUTED_ARM}" y1="${y - MUTED_ARM}" x2="${x + MUTED_ARM}" y2="${y + MUTED_ARM}" stroke="${INK}" stroke-width="${MUTED_STROKE}" stroke-linecap="round"/>` +
+          `<line x1="${x - MUTED_ARM}" y1="${y + MUTED_ARM}" x2="${x + MUTED_ARM}" y2="${y - MUTED_ARM}" stroke="${INK}" stroke-width="${MUTED_STROKE}" stroke-linecap="round"/>`
         );
       }
       if (marker === 'open') {
-        return `<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="${INK}" stroke-width="2.4"/>`;
+        return `<circle cx="${x}" cy="${y}" r="${OPEN_RADIUS}" fill="none" stroke="${INK}" stroke-width="${OPEN_STROKE}"/>`;
       }
       return '';
     })
@@ -90,22 +103,25 @@ const renderGrid = (chord) => {
   const right = gridRight(chord);
   const bottom = gridBottom(chord);
   const isOpenPosition = chord.startFret === 1;
+  // Fret lines run past the outer strings so the grid closes on a clean rectangle instead
+  // of notching at the corners, which strokes this thick make very visible.
+  const overhang = STRING_STROKE / 2;
 
   const strings = chord.markers
     .map((_, string) => {
       const x = stringX(string);
-      return `<line x1="${x}" y1="${LAYOUT.gridTop}" x2="${x}" y2="${bottom}" stroke="${INK}" stroke-width="1.6"/>`;
+      return `<line x1="${x}" y1="${LAYOUT.gridTop}" x2="${x}" y2="${bottom}" stroke="${INK}" stroke-width="${STRING_STROKE}"/>`;
     })
     .join('');
 
   const frets = Array.from({ length: chord.fretCount + 1 }, (_, row) => {
     if (row === 0 && isOpenPosition) return '';
     const y = LAYOUT.gridTop + row * LAYOUT.fretGap;
-    return `<line x1="${LAYOUT.gridLeft}" y1="${y}" x2="${right}" y2="${y}" stroke="${INK}" stroke-width="1.6"/>`;
+    return `<line x1="${LAYOUT.gridLeft - overhang}" y1="${y}" x2="${right + overhang}" y2="${y}" stroke="${INK}" stroke-width="${FRET_STROKE}"/>`;
   }).join('');
 
   const nut = isOpenPosition
-    ? `<rect x="${LAYOUT.gridLeft - 1}" y="${LAYOUT.gridTop - 7}" width="${right - LAYOUT.gridLeft + 2}" height="8" fill="${INK}"/>`
+    ? `<rect x="${LAYOUT.gridLeft - overhang}" y="${LAYOUT.gridTop - LAYOUT.nutHeight + FRET_STROKE / 2}" width="${right - LAYOUT.gridLeft + overhang * 2}" height="${LAYOUT.nutHeight}" fill="${INK}"/>`
     : '';
 
   return `${nut}${frets}${strings}`;
@@ -115,7 +131,7 @@ const renderPositionLabel = (chord) => {
   if (chord.startFret === 1) return '';
   // Clear of the dot that may sit on the outermost string, which reaches `dotRadius` past it.
   const x = gridRight(chord) + LAYOUT.dotRadius + 4;
-  const y = rowCenterY(0) + 5;
+  const y = rowCenterY(0) + 6;
   return `<text x="${x}" y="${y}" text-anchor="start" font-family="${FONT}" font-size="${POSITION_SIZE}" fill="${INK}">${chord.startFret}fr</text>`;
 };
 
