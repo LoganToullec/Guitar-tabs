@@ -184,19 +184,33 @@
       </ul>
     </section>
 
+    <!-- Both panels are drawn at 96 px per inch, which is what a CSS pixel is: life-size. -->
     <section id="size-chord" class="popover glass sizer" hidden aria-label="Taille d'export de l'accord">
       <header class="sizer-head">
         <b>Taille d'export</b>
-        <output id="size-value">2,1 cm</output>
+        <output id="size-value-chord">2,1 cm</output>
       </header>
       <div class="sizer-stage">
-        <!-- Drawn at 96 px per inch, which is what a CSS pixel is: the preview is life-size. -->
-        <div class="sizer-paper" id="size-paper"></div>
-        <div class="sizer-ruler" id="size-ruler" aria-hidden="true"></div>
+        <div class="sizer-paper" id="size-paper-chord"></div>
+        <div class="sizer-ruler" id="size-ruler-chord" aria-hidden="true"></div>
       </div>
-      <input type="range" id="size-range" aria-label="Largeur de l'accord exporté, en millimètres" />
-      <p class="sizer-note" id="size-note"></p>
+      <input type="range" id="size-range-chord" aria-label="Largeur de l'accord exporté, en millimètres" />
+      <p class="sizer-note" id="size-note-chord"></p>
       <p class="sizer-note dim">L'export PNG fait la même taille, en pleine résolution.</p>
+    </section>
+
+    <section id="size-tab" class="popover popover-high glass sizer" hidden aria-label="Taille d'export de la tablature">
+      <header class="sizer-head">
+        <b>Taille d'export</b>
+        <output id="size-value-tab">18,5 cm</output>
+      </header>
+      <div class="sizer-stage">
+        <div class="sizer-paper" id="size-paper-tab"></div>
+        <div class="sizer-ruler" id="size-ruler-tab" aria-hidden="true"></div>
+      </div>
+      <input type="range" id="size-range-tab" aria-label="Largeur de la tablature exportée, en millimètres" />
+      <p class="sizer-note" id="size-note-tab"></p>
+      <p class="sizer-note dim">18,5 cm est la largeur du texte sur une page A4.</p>
     </section>
 
     <section id="help-tab" class="popover popover-high glass" hidden>
@@ -300,6 +314,7 @@
 
       <span class="divider" aria-hidden="true"></span>
 
+      <button type="button" id="btn-size-tab" class="icon-btn" data-icon="ruler" data-tip="Taille d'export" data-tip-top aria-label="Taille d'export" aria-expanded="false"></button>
       <button type="button" id="btn-to-song-tab" class="icon-btn" data-icon="addToSong" data-tip="Ajouter à la chanson" data-tip-top aria-label="Ajouter à la chanson"></button>
       <button type="button" id="btn-clear-tab" class="icon-btn" data-icon="clear" data-tip="Vider la tablature" data-tip-top aria-label="Vider la tablature"></button>
       <button type="button" id="btn-help-tab" class="icon-btn" data-icon="help" data-tip="Aide" data-tip-top aria-label="Aide" aria-expanded="false"></button>

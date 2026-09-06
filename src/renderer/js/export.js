@@ -19,53 +19,75 @@ export const CLIPBOARD_DPI = 96;
 
 const MM_PER_INCH = 25.4;
 
-/** Width of an open position — the drawing the chosen export width refers to. */
+/** Width of an open position: whatever its shape, a chord is drawn at one scale. */
 const NOMINAL_CHORD_WIDTH = 196;
 
-/** Bounds of the export-width slider, in millimetres; the default matches a printed chart. */
-export const CHORD_WIDTH_MM = { min: 15, max: 60, step: 1, default: 21 };
+/**
+ * Bounds of the export-width slider, in millimetres, for the modes that carry one. A chord
+ * defaults to the width of a printed chart, a tablature to the text column of an A4 page
+ * with 1,27 cm margins — which is exactly how wide a tab sits on a song sheet.
+ */
+export const EXPORT_WIDTH_MM = {
+  chord: { min: 15, max: 60, step: 1, default: 21 },
+  tab: { min: 60, max: 260, step: 5, default: 185 },
+};
 
-const STORAGE_KEY = 'guitartabs.chord-width-mm';
+const storageKey = (mode) => `guitartabs.${mode}-width-mm`;
 
-export const clampChordWidthMm = (value) => {
+export const clampExportWidthMm = (mode, value) => {
+  const bounds = EXPORT_WIDTH_MM[mode];
+  if (!bounds) return 0;
+
   const millimetres = Math.round(Number(value));
-  if (!Number.isFinite(millimetres)) return CHORD_WIDTH_MM.default;
-  return Math.min(CHORD_WIDTH_MM.max, Math.max(CHORD_WIDTH_MM.min, millimetres));
+  if (!Number.isFinite(millimetres)) return bounds.default;
+  return Math.min(bounds.max, Math.max(bounds.min, millimetres));
 };
 
 /**
  * The chosen export width. Kept in the browser store rather than in the document: it is a
- * property of where the images are going, not of the chord being drawn.
+ * property of the page the images are going onto, not of the music being written.
  */
-export const chordWidthMm = () => {
+export const exportWidthMm = (mode) => {
+  const bounds = EXPORT_WIDTH_MM[mode];
+  if (!bounds) return 0;
+
   try {
-    const stored = globalThis.localStorage?.getItem(STORAGE_KEY);
-    return stored === null || stored === undefined ? CHORD_WIDTH_MM.default : clampChordWidthMm(stored);
+    const stored = globalThis.localStorage?.getItem(storageKey(mode));
+    return stored === null || stored === undefined ? bounds.default : clampExportWidthMm(mode, stored);
   } catch {
-    return CHORD_WIDTH_MM.default;
+    return bounds.default;
   }
 };
 
-export const setChordWidthMm = (value) => {
-  const millimetres = clampChordWidthMm(value);
+export const setExportWidthMm = (mode, value) => {
+  const millimetres = clampExportWidthMm(mode, value);
   try {
-    globalThis.localStorage?.setItem(STORAGE_KEY, String(millimetres));
+    globalThis.localStorage?.setItem(storageKey(mode), String(millimetres));
   } catch {
     // A store the app cannot write to only costs the setting its memory, not the export.
   }
   return millimetres;
 };
 
-/** Drawing units per printed inch for a chord diagram laid out `millimetres` wide. */
-export const chordUnitsPerInch = (millimetres) =>
-  NOMINAL_CHORD_WIDTH / (clampChordWidthMm(millimetres) / MM_PER_INCH);
+/**
+ * The drawing the chosen width is measured against. A chord keeps one scale whatever it
+ * holds, so it is measured against a nominal open position and a barred shape simply runs
+ * a little wider; a tablature is laid out to the chosen width whatever it contains, the way
+ * a paragraph fills its column, so it is measured against itself.
+ */
+const referenceWidth = (mode, sheetWidth) => (mode === 'chord' ? NOMINAL_CHORD_WIDTH : sheetWidth);
+
+/** Drawing units per printed inch for a sheet laid out `millimetres` wide. */
+export const unitsPerInchFor = (mode, sheetWidth, millimetres) =>
+  referenceWidth(mode, sheetWidth) / (clampExportWidthMm(mode, millimetres) / MM_PER_INCH);
 
 /**
  * How many drawing units make one printed inch, per kind of sheet. Exports carry this as
- * their pixel density, so a chord diagram drops into a document at the width picked in the
- * dock and a tablature at the width of a paper tab — no manual resizing.
+ * their pixel density, so a diagram or a tablature drops into a document at the width picked
+ * in the dock — no manual resizing.
  */
-export const unitsPerInch = (mode) => (mode === 'chord' ? chordUnitsPerInch(chordWidthMm()) : 96);
+export const unitsPerInch = (mode, sheetWidth) =>
+  EXPORT_WIDTH_MM[mode] ? unitsPerInchFor(mode, sheetWidth, exportWidthMm(mode)) : 96;
 
 const svgObjectUrl = (svg) =>
   URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));

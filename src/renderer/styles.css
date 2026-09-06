@@ -1805,9 +1805,10 @@ body[data-panel='closed'] .panel-toggle {
  * The preview is drawn at 96 px per inch, which is the definition of a CSS pixel: the
  * white sheet therefore shows the diagram at the size it will really be on the page.
  */
+/* The width is set from the preview itself: a tablature is far wider than a chord. */
 .sizer {
   width: 340px;
-  max-width: 340px;
+  max-width: calc(100vw - 48px);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1848,6 +1849,10 @@ body[data-panel='closed'] .panel-toggle {
   place-items: center;
   width: 100%;
   min-height: 112px;
+  /* A long tablature scrolls rather than pushing the panel off the screen; its width, the
+     thing being set, stays fully in view either way. */
+  max-height: 46vh;
+  overflow: auto;
   padding: 10px;
   border-radius: var(--r-sm);
   background: #fdfdfc;

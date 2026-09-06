@@ -263,21 +263,35 @@ redimensionné à la main.
 - **Copier** : met l'image PNG dans le presse-papiers, **à la taille imprimée** — pas à
   20 cm de large.
 
-### Taille d'export d'un accord
+- **Enregistrer / Ouvrir** : fichier `.gtab` (JSON) pour retravailler la feuille plus tard.
+  Le fichier porte son mode, et l'ouverture bascule automatiquement dessus.
 
-Le bouton **règle** du dock Accord ouvre un curseur qui règle la largeur du diagramme
-exporté, de **1,5 à 6 cm** (2,1 cm par défaut, la largeur d'une grille imprimée). Le
-panneau montre l'accord **à sa taille réelle** sur une feuille blanche, avec une règle
-graduée au centimètre en dessous : ce qui est à l'écran est ce que Word recevra. Le
-réglage est mémorisé d'une session à l'autre.
+### Taille d'export
 
-Il vaut pour les trois sorties — copie, PNG et SVG. Une remarque sur la copie : le
+Le bouton **règle** du dock ouvre un curseur qui règle la largeur de la feuille exportée.
+
+| Mode | Plage | Défaut |
+|---|---|---|
+| Accord | 1,5 à 6 cm | **2,1 cm**, la largeur d'une grille imprimée |
+| Tablature | 6 à 26 cm | **18,5 cm**, la largeur du texte sur une page A4 |
+
+Le panneau montre la feuille **à sa taille réelle** sur du papier blanc, avec une règle
+graduée au centimètre en dessous : un pixel CSS valant exactement 1/96 de pouce, ce qui
+est à l'écran est ce que Word recevra. Chaque mode garde son propre réglage, mémorisé
+d'une session à l'autre.
+
+Les deux modes ne mesurent pas tout à fait la même chose, parce qu'ils ne se comportent
+pas pareil sur une page. Un **accord** garde une échelle unique quelle que soit sa forme :
+la largeur choisie est celle d'une position ouverte, et une position barrée déborde
+simplement de la place que prend son « 3fr ». Une **tablature** est mise à la largeur
+choisie quel que soit son contenu, comme un paragraphe qui remplit sa colonne : ajouter
+des mesures resserre les notes au lieu d'élargir l'image.
+
+Le réglage vaut pour les trois sorties — copie, PNG et SVG. Une remarque sur la copie : le
 presse-papiers de Windows ne transporte aucune résolution, le nombre de pixels y est donc
 la seule mesure de la taille. Un accord copié à 2,1 cm ne fait que 79 px de large et
 paraîtra mou à l'impression ; **élargir le curseur donne d'autant plus de pixels**, et
 l'export PNG, lui, garde sa pleine résolution à n'importe quelle largeur.
-- **Enregistrer / Ouvrir** : fichier `.gtab` (JSON) pour retravailler la feuille plus tard.
-  Le fichier porte son mode, et l'ouverture bascule automatiquement dessus.
 
 ## Développement
 
