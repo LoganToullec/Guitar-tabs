@@ -26,9 +26,17 @@ const NATURAL_PITCH = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 const SHARPS = ['#', '♯'];
 const FLATS = ['b', '♭'];
 
+const BASS_PATTERN = /\/([A-G])([#b♯♭]?)$/;
+
+const pitchOf = (letter, accidental) => {
+  const shift = SHARPS.includes(accidental) ? 1 : FLATS.includes(accidental) ? -1 : 0;
+  return (NATURAL_PITCH[letter] + shift + 12) % 12;
+};
+
 /**
- * Comparison key for two written chord names: the root becomes a pitch class so `A#`
- * and `Bb` match, while the suffix is kept as typed (`m7` and `maj7` stay distinct).
+ * Comparison key for two written chord names: the root and the bass of a slash chord
+ * both become pitch classes, so `A#` matches `Bb` and `D/F#` matches `D/Gb`, while the
+ * suffix is kept as typed (`m7` and `maj7` stay distinct).
  */
 export const chordKey = (name) => {
   const written = String(name ?? '').trim();
@@ -36,8 +44,9 @@ export const chordKey = (name) => {
   if (!root) return written.toLowerCase();
 
   const [matched, letter, accidental] = root;
-  const shift = SHARPS.includes(accidental) ? 1 : FLATS.includes(accidental) ? -1 : 0;
-  const pitch = (NATURAL_PITCH[letter] + shift + 12) % 12;
+  const rest = written.slice(matched.length);
+  const bass = rest.match(BASS_PATTERN);
+  const suffix = bass ? `${rest.slice(0, bass.index)}/${pitchOf(bass[1], bass[2])}` : rest;
 
-  return `${pitch}${written.slice(matched.length)}`;
+  return `${pitchOf(letter, accidental)}${suffix}`;
 };

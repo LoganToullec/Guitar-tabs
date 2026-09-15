@@ -49,6 +49,12 @@ const FORMULAS = [
   { suffix: 'm11', intervals: [0, 2, 3, 5, 7, 10], optional: [7, 2] },
   { suffix: '13', intervals: [0, 2, 4, 7, 9, 10], optional: [7, 2] },
   { suffix: 'maj13', intervals: [0, 2, 4, 7, 9, 11], optional: [7, 2] },
+  { suffix: 'm13', intervals: [0, 2, 3, 5, 7, 9, 10], optional: [7, 5, 2] },
+  { suffix: 'm6/9', intervals: [0, 2, 3, 7, 9], optional: [7] },
+  { suffix: 'mMaj9', intervals: [0, 2, 3, 7, 11], optional: [7] },
+  { suffix: '7#11', intervals: [0, 4, 6, 7, 10], optional: [] },
+  { suffix: 'maj7#11', intervals: [0, 4, 6, 7, 11], optional: [] },
+  { suffix: '13b9', intervals: [0, 1, 4, 7, 9, 10], optional: [7] },
 ];
 
 export const noteName = (pitchClass) => PITCH_NAMES[((pitchClass % 12) + 12) % 12];

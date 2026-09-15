@@ -60,6 +60,48 @@ export const OPEN_CHORDS = [
   { name: 'B7', frets: ['x', 2, 1, 2, 0, 2], fingers: [0, 2, 1, 3, 0, 4] },
   { name: 'Bm', frets: ['x', 2, 4, 4, 3, 2], fingers: [0, 1, 3, 4, 2, 1], barre: { fret: 2, from: 1, to: 5 } },
   { name: 'Bb', frets: ['x', 1, 3, 3, 3, 1], fingers: [0, 1, 2, 3, 4, 1], barre: { fret: 1, from: 1, to: 5 } },
+
+  { name: 'C6', frets: ['x', 3, 2, 2, 1, 0], fingers: [0, 4, 2, 3, 1, 0] },
+  { name: 'Csus2', frets: ['x', 3, 0, 0, 3, 3], fingers: [0, 2, 0, 0, 3, 4] },
+
+  { name: 'D6', frets: ['x', 'x', 0, 2, 0, 2], fingers: [0, 0, 0, 2, 0, 3] },
+  { name: 'Dm6', frets: ['x', 'x', 0, 2, 0, 1], fingers: [0, 0, 0, 3, 0, 1] },
+  { name: 'Dmaj7', frets: ['x', 'x', 0, 2, 2, 2], fingers: [0, 0, 0, 1, 2, 3] },
+
+  { name: 'E5', frets: [0, 2, 2, 'x', 'x', 'x'], fingers: [0, 1, 2, 0, 0, 0] },
+  { name: 'E6', frets: [0, 2, 2, 1, 2, 0], fingers: [0, 2, 3, 1, 4, 0] },
+  { name: 'Em6', frets: [0, 2, 2, 0, 2, 0], fingers: [0, 2, 3, 0, 4, 0] },
+  { name: 'Emaj7', frets: [0, 2, 1, 1, 0, 0], fingers: [0, 3, 1, 2, 0, 0] },
+  { name: 'E9', frets: [0, 2, 0, 1, 0, 2], fingers: [0, 2, 0, 1, 0, 4] },
+  { name: 'Esus2', frets: [0, 2, 4, 4, 0, 0], fingers: [0, 1, 3, 4, 0, 0] },
+
+  { name: 'G6', frets: [3, 2, 0, 0, 0, 0], fingers: [3, 2, 0, 0, 0, 0] },
+  { name: 'Gmaj7', frets: [3, 2, 0, 0, 0, 2], fingers: [3, 2, 0, 0, 0, 4] },
+  { name: 'Gadd9', frets: [3, 2, 0, 2, 0, 3], fingers: [2, 1, 0, 3, 0, 4] },
+
+  { name: 'A6', frets: ['x', 0, 2, 2, 2, 2], fingers: [0, 0, 1, 2, 3, 4] },
+  { name: 'Am6', frets: ['x', 0, 2, 2, 1, 2], fingers: [0, 0, 2, 3, 1, 4] },
+  { name: 'Aadd9', frets: ['x', 0, 2, 4, 2, 0], fingers: [0, 0, 1, 3, 2, 0] },
+  { name: 'A9', frets: ['x', 0, 2, 4, 2, 3], fingers: [0, 0, 1, 3, 2, 4] },
+
+  { name: 'Bm7', frets: ['x', 2, 0, 2, 0, 2], fingers: [0, 2, 0, 3, 0, 4] },
+
+  { name: 'C/E', frets: [0, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0] },
+  { name: 'C/G', frets: [3, 3, 2, 0, 1, 0], fingers: [3, 4, 2, 0, 1, 0] },
+  { name: 'D/F#', frets: [2, 'x', 0, 2, 3, 2], fingers: [2, 0, 0, 1, 4, 3] },
+  { name: 'D/A', frets: ['x', 0, 0, 2, 3, 2], fingers: [0, 0, 0, 1, 3, 2] },
+  { name: 'Dm/F', frets: [1, 'x', 0, 2, 3, 1], fingers: [1, 0, 0, 2, 4, 1] },
+  { name: 'E/G#', frets: [4, 'x', 2, 1, 0, 0], fingers: [4, 0, 3, 2, 0, 0] },
+  { name: 'F/A', frets: ['x', 0, 3, 2, 1, 1], fingers: [0, 0, 4, 3, 1, 1] },
+  { name: 'F/C', frets: ['x', 3, 3, 2, 1, 1], fingers: [0, 3, 4, 2, 1, 1] },
+  { name: 'G/B', frets: ['x', 2, 0, 0, 0, 3], fingers: [0, 1, 0, 0, 0, 4] },
+  { name: 'G/D', frets: ['x', 'x', 0, 0, 0, 3], fingers: [0, 0, 0, 0, 0, 3] },
+  { name: 'Gmaj7/F#', frets: [2, 'x', 0, 0, 0, 3], fingers: [1, 0, 0, 0, 0, 4] },
+  { name: 'A/C#', frets: ['x', 4, 2, 2, 2, 0], fingers: [0, 4, 1, 2, 3, 0] },
+  { name: 'A/E', frets: [0, 0, 2, 2, 2, 0], fingers: [0, 0, 1, 2, 3, 0] },
+  { name: 'Am/E', frets: [0, 0, 2, 2, 1, 0], fingers: [0, 0, 2, 3, 1, 0] },
+  { name: 'Em/B', frets: ['x', 2, 2, 0, 0, 0], fingers: [0, 1, 2, 0, 0, 0] },
+  { name: 'Bm/D', frets: ['x', 'x', 0, 4, 3, 2], fingers: [0, 0, 0, 3, 2, 1] },
 ];
 
 /**
@@ -103,6 +145,67 @@ const MOVABLE_SHAPES = [
   { root: 2, suffix: '7', offsets: [null, null, 0, 2, 1, 2], fingers: [0, 0, 1, 3, 2, 4] },
   { root: 2, suffix: 'm7', offsets: [null, null, 0, 2, 1, 1], fingers: [0, 0, 1, 3, 2, 2] },
   { root: 2, suffix: 'maj7', offsets: [null, null, 0, 2, 2, 2], fingers: [0, 0, 1, 2, 3, 4] },
+
+  // Root on the low E string, the richer colours.
+  { root: 0, suffix: 'sus2', offsets: [0, 2, 4, 4, 0, 0], fingers: [1, 2, 3, 4, 1, 1], barre: 0 },
+  { root: 0, suffix: 'mMaj7', offsets: [0, 2, 1, 0, 0, 0], fingers: [1, 4, 2, 1, 1, 1], barre: 0 },
+  { root: 0, suffix: 'madd9', offsets: [0, 2, 4, 0, 0, 0], fingers: [1, 2, 4, 1, 1, 1], barre: 0 },
+  { root: 0, suffix: 'm9', offsets: [0, 2, 0, 0, 0, 2], fingers: [1, 3, 1, 1, 1, 4], barre: 0 },
+  { root: 0, suffix: 'm11', offsets: [0, 0, 0, 0, 0, 0], fingers: [1, 1, 1, 1, 1, 1], barre: 0 },
+  { root: 0, suffix: 'maj9', offsets: [0, null, 1, 1, 0, 2], fingers: [1, 0, 2, 3, 1, 4], barre: 0 },
+  { root: 0, suffix: '7b9', offsets: [0, null, 0, 1, 0, 1], fingers: [1, 0, 1, 2, 1, 3], barre: 0 },
+  { root: 0, suffix: '13', offsets: [0, null, 0, 1, 2, 2], fingers: [1, 0, 1, 2, 3, 4], barre: 0 },
+  { root: 0, suffix: '6/9', offsets: [0, null, null, 1, 2, 2], fingers: [1, 0, 0, 2, 3, 4] },
+  { root: 0, suffix: '7#5', offsets: [0, null, 0, 1, 1, null], fingers: [1, 0, 1, 2, 3, 0] },
+  { root: 0, suffix: '7b5', offsets: [0, null, 0, 1, -1, null], fingers: [2, 0, 3, 4, 1, 0], minRootFret: 2 },
+  { root: 0, suffix: 'aug', offsets: [0, 3, 2, 1, null, null], fingers: [1, 4, 3, 2, 0, 0] },
+
+  // Root on the A string, the richer colours.
+  { root: 1, suffix: 'm6', offsets: [null, 0, null, -1, 1, 0], fingers: [0, 2, 0, 1, 4, 3], minRootFret: 2 },
+  { root: 1, suffix: 'mMaj7', offsets: [null, 0, 2, 1, 1, 0], fingers: [0, 1, 4, 2, 3, 1], barre: 0 },
+  { root: 1, suffix: 'm11', offsets: [null, 0, 0, 0, 1, 0], fingers: [0, 1, 1, 1, 2, 1], barre: 0 },
+  { root: 1, suffix: 'dim', offsets: [null, 0, 1, 2, 1, null], fingers: [0, 1, 2, 4, 3, 0] },
+  { root: 1, suffix: '9', offsets: [null, 0, -1, 0, 0, null], fingers: [0, 2, 1, 3, 4, 0], minRootFret: 2 },
+  { root: 1, suffix: 'maj9', offsets: [null, 0, -1, 1, 0, null], fingers: [0, 2, 1, 4, 3, 0], minRootFret: 2 },
+  { root: 1, suffix: 'm9', offsets: [null, 0, -2, 0, 0, null], fingers: [0, 2, 1, 3, 4, 0], minRootFret: 3 },
+  { root: 1, suffix: '7b9', offsets: [null, 0, -1, 0, -1, null], fingers: [0, 3, 1, 4, 2, 0], minRootFret: 2 },
+  { root: 1, suffix: '7#9', offsets: [null, 0, -1, 0, 1, null], fingers: [0, 2, 1, 3, 4, 0], minRootFret: 2 },
+  { root: 1, suffix: '13', offsets: [null, 0, -1, 0, 0, 2], fingers: [0, 2, 1, 3, 3, 4], minRootFret: 2 },
+  { root: 1, suffix: 'maj13', offsets: [null, 0, -1, 1, null, 2], fingers: [0, 2, 1, 3, 0, 4], minRootFret: 2 },
+  { root: 1, suffix: '6/9', offsets: [null, 0, -1, -1, 0, 0], fingers: [0, 2, 1, 1, 3, 4], minRootFret: 2 },
+
+  // Root on the D string, the four-string voicings.
+  { root: 2, suffix: '6', offsets: [null, null, 0, 2, 0, 2], fingers: [0, 0, 1, 3, 1, 4], barre: 0 },
+  { root: 2, suffix: 'm6', offsets: [null, null, 0, 2, 0, 1], fingers: [0, 0, 1, 3, 1, 2], barre: 0 },
+  { root: 2, suffix: 'sus2', offsets: [null, null, 0, 2, 3, 0], fingers: [0, 0, 1, 2, 4, 1], barre: 0 },
+  { root: 2, suffix: 'sus4', offsets: [null, null, 0, 2, 3, 3], fingers: [0, 0, 1, 2, 3, 4] },
+  { root: 2, suffix: '7sus4', offsets: [null, null, 0, 2, 1, 3], fingers: [0, 0, 1, 3, 2, 4] },
+  { root: 2, suffix: 'mMaj7', offsets: [null, null, 0, 2, 2, 1], fingers: [0, 0, 1, 3, 4, 2] },
+  { root: 2, suffix: 'm7b5', offsets: [null, null, 0, 1, 1, 1], fingers: [0, 0, 1, 2, 3, 4] },
+  { root: 2, suffix: 'dim7', offsets: [null, null, 0, 1, 0, 1], fingers: [0, 0, 1, 2, 1, 3], barre: 0 },
+
+  // Inversions: the same grip, the fifth taken as the bass.
+  { root: 1, suffix: '', bassInterval: 7, offsets: [0, 0, 2, 2, 2, 0], fingers: [1, 1, 3, 3, 3, 1], barre: 0 },
+  { root: 1, suffix: 'm', bassInterval: 7, offsets: [0, 0, 2, 2, 1, 0], fingers: [1, 1, 3, 4, 2, 1], barre: 0 },
+  { root: 2, suffix: '', bassInterval: 7, offsets: [null, 0, 0, 2, 3, 2], fingers: [0, 1, 1, 2, 4, 3], barre: 0 },
+  { root: 2, suffix: 'm', bassInterval: 7, offsets: [null, 0, 0, 2, 3, 1], fingers: [0, 1, 1, 3, 4, 2], barre: 0 },
+
+  // Three-string triads on the top strings, for comping above a bass player.
+  { root: 3, suffix: '', offsets: [null, null, null, 0, 0, -2], fingers: [0, 0, 0, 2, 3, 1], minRootFret: 3 },
+  { root: 3, suffix: 'm', offsets: [null, null, null, 0, -1, -2], fingers: [0, 0, 0, 3, 2, 1], minRootFret: 3 },
+
+  // The rarer colours.
+  { root: 0, suffix: '11', offsets: [0, 0, 0, 2, 0, 2], fingers: [1, 1, 1, 3, 1, 4], barre: 0 },
+  { root: 1, suffix: '11', offsets: [null, 0, 0, 0, 0, null], fingers: [0, 1, 1, 1, 1, 0], barre: 0 },
+  { root: 0, suffix: '6', offsets: [0, 2, 2, 1, 2, null], fingers: [1, 3, 3, 2, 4, 0] },
+  { root: 0, suffix: 'm7b5', offsets: [0, null, 0, 0, -1, null], fingers: [2, 0, 3, 4, 1, 0], minRootFret: 2 },
+  { root: 0, suffix: '7#11', offsets: [0, 1, 0, 1, 0, null], fingers: [1, 2, 1, 3, 1, 0], barre: 0 },
+  { root: 0, suffix: 'maj7#11', offsets: [0, 1, 1, 1, 0, null], fingers: [1, 2, 3, 4, 1, 0], barre: 0 },
+  { root: 0, suffix: 'mMaj9', offsets: [0, 2, 1, 0, 0, 2], fingers: [1, 3, 2, 1, 1, 4], barre: 0 },
+  { root: 1, suffix: '7#5', offsets: [null, 0, -1, 0, null, 1], fingers: [0, 2, 1, 3, 0, 4], minRootFret: 2 },
+  { root: 1, suffix: 'm6/9', offsets: [null, 0, -2, -1, 0, 0], fingers: [0, 3, 1, 2, 4, 4], minRootFret: 3 },
+  { root: 1, suffix: 'm13', offsets: [null, 0, -2, 0, 0, 2], fingers: [0, 2, 1, 3, 3, 4], minRootFret: 3 },
+  { root: 1, suffix: '13b9', offsets: [null, 0, -1, 0, -1, 2], fingers: [0, 2, 1, 3, 1, 4], minRootFret: 2 },
 ];
 
 const rootFretOn = (stringIndex, pitchClass) => (((pitchClass - STRING_PITCH[stringIndex]) % 12) + 12) % 12;
@@ -148,8 +251,10 @@ const transpose = (shape) => {
       { from: 5, to: 5 },
     );
 
+    const bass = shape.bassInterval === undefined ? '' : `/${noteName(pitch + shape.bassInterval)}`;
+
     entries.push({
-      name: `${noteName(pitch)}${shape.suffix}`,
+      name: `${noteName(pitch)}${shape.suffix}${bass}`,
       frets,
       fingers: shape.fingers,
       barre:
@@ -162,9 +267,14 @@ const transpose = (shape) => {
   return entries;
 };
 
+const respell = (note) => ENHARMONIC[note] ?? note;
+
 const aliasOf = (name) => {
-  const root = Object.keys(ENHARMONIC).find((candidate) => name.startsWith(candidate));
-  return root ? `${ENHARMONIC[root]}${name.slice(root.length)}` : null;
+  const other = name
+    .replace(/^[A-G][#b]?/, respell)
+    .replace(/\/([A-G][#b]?)$/, (_, bass) => `/${respell(bass)}`);
+
+  return other === name ? null : other;
 };
 
 const build = () => {

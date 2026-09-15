@@ -156,3 +156,17 @@ test('les lectures sont uniques et limitées', () => {
 test('aucune lecture pour une forme non identifiable', () => {
   assert.deepEqual(detectChordNames([0, 1, null, null, null, null]), []);
 });
+
+test('le catalogue propose des renversements nommés sur leur basse', () => {
+  const names = new Set(catalogShapes().map((shape) => shape.name));
+
+  for (const name of ['C/G', 'C/E', 'D/F#', 'G/B', 'Am/E', 'Dm/A']) {
+    assert.ok(names.has(name), `${name} manquant`);
+  }
+});
+
+test('un renversement se retrouve écrit avec l autre altération', () => {
+  const [shape] = searchCatalog('eb/bb');
+
+  assert.equal(chordKey(shape.name), chordKey('D#/A#'));
+});
